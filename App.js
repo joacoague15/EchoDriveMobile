@@ -1,5 +1,5 @@
 import { Alert, View } from 'react-native';
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import { GestureHandlerRootView, PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import { Audio } from 'expo-av';
 
@@ -28,17 +28,20 @@ export default function App() {
 //
 //     *Créditos iniciales *
 
-    let fingerMovementBlocker = {
+    const fingerMovementBlockerRef = useRef({
         swipeUp: true,
         swipeDown: true,
         swipeLeft: true,
         swipeRight: true,
-        tap: false
-    };
+        tap: true
+    });
+
+    const dangerInRightRef = useRef(false);
+    const dangerInLeftRef = useRef(false);
 
     const SWIPE_THRESHOLD = 10;
     const onHandlerStateChange = event => {
-        const { numberOfPointers } = event.nativeEvent;
+        // const { numberOfPointers } = event.nativeEvent;
 
         if (event.nativeEvent.oldState === State.ACTIVE) {
 
@@ -46,9 +49,21 @@ export default function App() {
             if (Math.abs(event.nativeEvent.translationX) < SWIPE_THRESHOLD &&
                 Math.abs(event.nativeEvent.translationY) < SWIPE_THRESHOLD) {
             } else {
-                if (event.nativeEvent.velocityX > 0 && !fingerMovementBlocker.swipeRight) {
-                    Alert.alert('Swiped Right!');
-                } else if (event.nativeEvent.velocityX < 0 && !fingerMovementBlocker.swipeLeft) {
+                if (event.nativeEvent.velocityX > 0 && !fingerMovementBlockerRef.current.swipeRight) {
+                    if (dangerInLeftRef.current === true) {
+                        dangerInLeftRef.current = false;
+                        const playCarSteeringRight = async () => {
+                            const { sound } = await Audio.Sound.createAsync(
+                                require('./assets/sounds/carSteeringRight.mp3')
+                            );
+
+                            await sound.playAsync();
+
+                        }
+
+                        playCarSteeringRight();
+                    }
+                } else if (event.nativeEvent.velocityX < 0 && !fingerMovementBlockerRef.current.swipeLeft) {
                     Alert.alert('Swiped Left!');
                 }
             }
@@ -62,23 +77,105 @@ export default function App() {
     };
 
         useEffect(() => {
-            const playAudio = async () => {
+            const playPresentation1 = async () => {
                 const { sound } = await Audio.Sound.createAsync(
-                    require('./assets/sounds/random.mp3')
+                    require('./assets/sounds/presentacion1.mp3')
                 );
+
+                sound.setOnPlaybackStatusUpdate(playbackStatus => {
+                    if (playbackStatus.didJustFinish) {
+                        fingerMovementBlockerRef.current.tap = false;
+                    }
+                });
+
                 await sound.playAsync();
+
             }
 
-            playAudio();
+            playPresentation1();
         }, []);
 
     const handleTapGesture = event => {
         if (event.nativeEvent.state === State.ACTIVE) {
-            if (!fingerMovementBlocker.tap) {
+            if (fingerMovementBlockerRef.current.tap === false) {
+                fingerMovementBlockerRef.current.tap = true;
+                const playAudio = async () => {
+                    const { sound } = await Audio.Sound.createAsync(
+                        require('./assets/sounds/presentacion2.mp3')
+                    );
 
+                    sound.setOnPlaybackStatusUpdate(playbackStatus => {
+                        if (playbackStatus.didJustFinish) {
+                            startFirstMechanicExplanation();
+                        }
+                    });
 
+                    await sound.playAsync();
+                }
 
+                playAudio();
             }
+        }
+    }
+
+    const startFirstMechanicExplanation = () => {
+        const playAudio = async () => {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/mechanicExplanation.mp3')
+            );
+
+            sound.setOnPlaybackStatusUpdate(playbackStatus => {
+                if (playbackStatus.didJustFinish) {
+                    startFirstMechanic();
+                }
+            });
+
+            await sound.playAsync();
+        }
+
+        playAudio();
+    }
+
+    const startFirstMechanic = () => {
+        fingerMovementBlockerRef.current.swipeLeft = false;
+        fingerMovementBlockerRef.current.swipeRight = false;
+
+        thereIsDanger('left');
+    }
+
+    const thereIsDanger = (position) => {
+        if (position === 'left') {
+            dangerInLeftRef.current = true;
+
+            const playAudio = async () => {
+                const { sound } = await Audio.Sound.createAsync(
+                    require('./assets/sounds/warningLeft.mp3')
+                );
+
+                sound.setOnPlaybackStatusUpdate(playbackStatus => {
+                    if (playbackStatus.didJustFinish) {
+                        dangerInLeftRef.current = false;
+                    }
+                });
+
+                await sound.playAsync();
+            }
+
+            playAudio();
+        }
+
+        if (position === 'right') {
+            dangerInLeftRef.current = true;
+
+            const playAudio = async () => {
+                const { sound } = await Audio.Sound.createAsync(
+                    require('./assets/sounds/warningRight.mp3')
+                );
+
+                await sound.playAsync();
+            }
+
+            playAudio();
         }
     }
 
