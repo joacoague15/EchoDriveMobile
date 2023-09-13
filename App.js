@@ -40,6 +40,11 @@ export default function App() {
     const dangerInRightRef = useRef(false);
     const dangerInLeftRef = useRef(false);
 
+    const userMoveRightCorrectlyRef = useRef(false);
+    const userMoveLeftCorrectlyRef = useRef(false);
+
+    const TIME_USER_HAS_TO_REACT = 2000;
+
     const SWIPE_THRESHOLD = 10;
     const onHandlerStateChange = event => {
         // const { numberOfPointers } = event.nativeEvent;
@@ -85,6 +90,8 @@ export default function App() {
     const handleSteering = () => {
         if (dangerInLeftRef.current === true) {
             dangerInLeftRef.current = false;
+
+            userMoveRightCorrectlyRef.current = true;
             const playCarSteeringRight = async () => {
                 const { sound } = await Audio.Sound.createAsync(
                     require('./assets/sounds/carSteeringRight.mp3')
@@ -99,6 +106,9 @@ export default function App() {
 
         if (dangerInRightRef.current === true) {
             dangerInRightRef.current = false;
+
+            userMoveLeftCorrectlyRef.current = true;
+
             const playCarSteeringRight = async () => {
                 const { sound } = await Audio.Sound.createAsync(
                     require('./assets/sounds/carSteeringLeft.mp3')
@@ -176,19 +186,26 @@ export default function App() {
         fingerMovementBlockerRef.current.swipeLeft = false;
         fingerMovementBlockerRef.current.swipeRight = false;
 
-        thereIsDanger('left');
+        setTimeout(() => {
+            thereIsDanger('left');
+        }, 2000);
+
 
         setTimeout(() => {
             thereIsDanger('left');
-        }, 5000);
+        }, 6000);
 
         setTimeout(() => {
             thereIsDanger('right');
         }, 10000);
 
         setTimeout(() => {
-            aiAskForRadio();
+            thereIsDanger('right');
         }, 14000);
+
+        setTimeout(() => {
+            aiAskForRadio();
+        }, 18000);
 
     }
 
@@ -223,6 +240,7 @@ export default function App() {
                 sound.setOnPlaybackStatusUpdate(playbackStatus => {
                     if (playbackStatus.didJustFinish) {
                         dangerInLeftRef.current = false;
+                        handleSteeringResult('right');
                     }
                 });
 
@@ -240,11 +258,40 @@ export default function App() {
                     require('./assets/sounds/warningRight.mp3')
                 );
 
+                sound.setOnPlaybackStatusUpdate(playbackStatus => {
+                    if (playbackStatus.didJustFinish) {
+                        dangerInRightRef.current = false;
+                        handleSteeringResult('left');
+                    }
+                });
+
                 await sound.playAsync();
             }
 
             playAudio();
         }
+    }
+
+    const handleSteeringResult = (direction) => {
+            setTimeout(() => {
+                if (direction === 'left') {
+                    if (userMoveLeftCorrectlyRef.current === true) {
+                        alert("MOVED TO LEFT CORRECTLY!");
+                    } else {
+                        alert("STRESS INCREASED");
+                    }
+                }
+            }, TIME_USER_HAS_TO_REACT);
+
+            setTimeout(() => {
+                if (direction === 'right') {
+                    if (userMoveRightCorrectlyRef.current === true) {
+                        alert("MOVED TO RIGHT CORRECTLY!");
+                    } else {
+                        alert("STRESS INCREASED");
+                    }
+                }
+            }, TIME_USER_HAS_TO_REACT);
     }
 
   return (
