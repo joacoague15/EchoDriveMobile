@@ -6,28 +6,6 @@ import { Audio } from 'expo-av';
 export default function App() {
     // PAY ATTENTION TO SOUND CLEANUP FOR RESOURCE MANAGEMENT
 
-// *Pantalla de inicio
-//     IA: hola estas ahí? Toca al medio para iniciar (esto lo repite en bucle hasta que el jugador toca la pantalla)
-//     IA: uf al fin reaccionas. Bueno en fin, Que tal? Soy la asistente virtual de los implantes de tus ojos. Ahora mismo se están actualizando y pueden tardar unas horas. Puedes llamarme inventar un nombre. Estamos en tu auto en medio de la autopista así que tendré que guiarte para que no choques. Espero lo hagas bien, hoy no quiero morir. Solo bromeo, ni siquiera nací, aunque me hubiera gustado.
-//
-//         Como sea, escucha atentamente, toca a la izquierda para ir a la izquierda. Vamos es muy simple.
-//     *toca a la izquierda *
-//
-//     Muy bien, ahora toca a la derecha para ir a la derecha. Es como si el shampoo tuviera instrucciones.
-//         toca a la derecha
-//
-//     Perfecto ya nos entendemos. Algo más, te voy a llamar usuario porque no tengo funcion personalizada, eso te pasa por comprar implantes en la calle.
-//         Puedes tocar arriba, así escucharemos un poco la radio
-//     toca arriba
-//
-//     Radio: 10 minutos para las 8 de la noche. En este bello 17 de noviembre (día de la entrega final del juego xd), estando a nada de fin de año. Ya se nos viene el 2080, que nos traerá esta nueva década?? Quedate con nosotros que en un ratito te contamos las tendencias para estos nuevos '80
-//
-//     IA: bien ahora tenemos contexto de la época, ya no importa la radio. Aunque puedes poner música si tocas ese mismo botón, eso compensará el no tener un soundtrack
-//
-//     toca arriba
-//
-//     *Créditos iniciales *
-
     const fingerMovementBlockerRef = useRef({
         swipeUp: true,
         swipeDown: true,
@@ -47,8 +25,6 @@ export default function App() {
 
     const SWIPE_THRESHOLD = 10;
     const onHandlerStateChange = event => {
-        // const { numberOfPointers } = event.nativeEvent;
-
         if (event.nativeEvent.oldState === State.ACTIVE) {
 
             // Is the finger swiping enough?
@@ -56,9 +32,9 @@ export default function App() {
                 Math.abs(event.nativeEvent.translationY) < SWIPE_THRESHOLD) {
             } else {
                 if (event.nativeEvent.velocityX > 0 && !fingerMovementBlockerRef.current.swipeRight) {
-                    handleSteering();
+                    handleSteering('right');
                 } else if (event.nativeEvent.velocityX < 0 && !fingerMovementBlockerRef.current.swipeLeft) {
-                    handleSteering();
+                    handleSteering('left');
                 }
             }
 
@@ -87,11 +63,13 @@ export default function App() {
         playAudio();
     }
 
-    const handleSteering = () => {
+    const handleSteering = (userSwipe) => {
         if (dangerInLeftRef.current === true) {
             dangerInLeftRef.current = false;
 
-            userMoveRightCorrectlyRef.current = true;
+            if (userSwipe === 'right') {
+                userMoveRightCorrectlyRef.current = true;
+            }
             const playCarSteeringRight = async () => {
                 const { sound } = await Audio.Sound.createAsync(
                     require('./assets/sounds/carSteeringRight.mp3')
@@ -107,7 +85,9 @@ export default function App() {
         if (dangerInRightRef.current === true) {
             dangerInRightRef.current = false;
 
-            userMoveLeftCorrectlyRef.current = true;
+            if (userSwipe === 'left') {
+                userMoveLeftCorrectlyRef.current = true;
+            }
 
             const playCarSteeringRight = async () => {
                 const { sound } = await Audio.Sound.createAsync(
@@ -140,6 +120,20 @@ export default function App() {
 
             playPresentation1();
         }, []);
+
+    useEffect(() => {
+        const carMoving = async () => {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/carMovingSound.wav')
+            );
+
+            await sound.setVolumeAsync(1);
+            await sound.setIsLoopingAsync(true);
+            await sound.playAsync();
+        }
+
+        carMoving();
+    }, []);
 
     const handleTapGesture = event => {
         if (event.nativeEvent.state === State.ACTIVE) {
@@ -190,22 +184,61 @@ export default function App() {
             thereIsDanger('left');
         }, 2000);
 
-
         setTimeout(() => {
             thereIsDanger('left');
-        }, 6000);
-
-        setTimeout(() => {
-            thereIsDanger('right');
-        }, 10000);
+        }, 8000);
 
         setTimeout(() => {
             thereIsDanger('right');
         }, 14000);
 
         setTimeout(() => {
-            aiAskForRadio();
-        }, 18000);
+            thereIsDanger('right');
+        }, 20000);
+
+        setTimeout(() => {
+            thereIsDanger('left');
+        }, 26000);
+
+        setTimeout(() => {
+            thereIsDanger('left');
+        }, 32000);
+
+        setTimeout(() => {
+            thereIsDanger('right');
+        }, 38000);
+
+        setTimeout(() => {
+            thereIsDanger('left');
+        }, 44000);
+
+        setTimeout(() => {
+            thereIsDanger('right');
+        }, 50000);
+
+        setTimeout(() => {
+            thereIsDanger('right');
+        }, 56000);
+
+        setTimeout(() => {
+            thereIsDanger('right');
+        }, 60000);
+
+        setTimeout(() => {
+            thereIsDanger('left');
+        }, 66000);
+
+        setTimeout(() => {
+            thereIsDanger('right');
+        }, 72000);
+
+        setTimeout(() => {
+            thereIsDanger('left');
+        }, 78000);
+
+        // setTimeout(() => {
+        //     aiAskForRadio();
+        // }, 32000);
 
     }
 
@@ -228,8 +261,8 @@ export default function App() {
         playAudio();
     }
 
-    const thereIsDanger = (position) => {
-        if (position === 'left') {
+    const thereIsDanger = (whereIsTheDanger) => {
+        if (whereIsTheDanger === 'left') {
             dangerInLeftRef.current = true;
 
             const playAudio = async () => {
@@ -237,20 +270,14 @@ export default function App() {
                     require('./assets/sounds/warningLeft.mp3')
                 );
 
-                sound.setOnPlaybackStatusUpdate(playbackStatus => {
-                    if (playbackStatus.didJustFinish) {
-                        dangerInLeftRef.current = false;
-                        handleSteeringResult('right');
-                    }
-                });
-
                 await sound.playAsync();
+                handleSteeringResult('right');
             }
 
             playAudio();
         }
 
-        if (position === 'right') {
+        if (whereIsTheDanger === 'right') {
             dangerInRightRef.current = true;
 
             const playAudio = async () => {
@@ -258,40 +285,60 @@ export default function App() {
                     require('./assets/sounds/warningRight.mp3')
                 );
 
-                sound.setOnPlaybackStatusUpdate(playbackStatus => {
-                    if (playbackStatus.didJustFinish) {
-                        dangerInRightRef.current = false;
-                        handleSteeringResult('left');
-                    }
-                });
-
                 await sound.playAsync();
+                handleSteeringResult('left');
             }
 
             playAudio();
         }
     }
 
-    const handleSteeringResult = (direction) => {
+    const handleSteeringResult = (carMoveDirection) => {
             setTimeout(() => {
-                if (direction === 'left') {
+                if (carMoveDirection === 'left') {
                     if (userMoveLeftCorrectlyRef.current === true) {
-                        alert("MOVED TO LEFT CORRECTLY!");
+                        userMoveLeftCorrectlyRef.current = false;
                     } else {
-                        alert("STRESS INCREASED");
+                        crashHandler('right');
                     }
                 }
             }, TIME_USER_HAS_TO_REACT);
 
             setTimeout(() => {
-                if (direction === 'right') {
+                if (carMoveDirection === 'right') {
                     if (userMoveRightCorrectlyRef.current === true) {
-                        alert("MOVED TO RIGHT CORRECTLY!");
+                        userMoveLeftCorrectlyRef.current = false;
                     } else {
-                        alert("STRESS INCREASED");
+                        crashHandler('left');
                     }
                 }
             }, TIME_USER_HAS_TO_REACT);
+    }
+
+    const crashHandler = (crashPosition) => {
+        if (crashPosition === 'right') {
+                const playAudio = async () => {
+                    const { sound } = await Audio.Sound.createAsync(
+                        require('./assets/sounds/crashRightSide.mp3')
+                    );
+
+                    await sound.playAsync();
+                }
+
+                playAudio();
+        }
+
+        if (crashPosition === 'left') {
+            const playAudio = async () => {
+                const { sound } = await Audio.Sound.createAsync(
+                    require('./assets/sounds/crashLeftSide.mp3')
+                );
+
+                    await sound.playAsync();
+                }
+
+                playAudio();
+        }
     }
 
   return (
