@@ -72,7 +72,7 @@ export default function App() {
             }
             const playCarSteeringRight = async () => {
                 const { sound } = await Audio.Sound.createAsync(
-                    require('./assets/sounds/carSteeringRight.mp3')
+                    require('./assets/sounds/carSteering.mp3')
                 );
 
                 await sound.playAsync();
@@ -91,7 +91,7 @@ export default function App() {
 
             const playCarSteeringRight = async () => {
                 const { sound } = await Audio.Sound.createAsync(
-                    require('./assets/sounds/carSteeringLeft.mp3')
+                    require('./assets/sounds/carSteering.mp3')
                 );
 
                 await sound.playAsync();
