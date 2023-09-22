@@ -21,7 +21,13 @@ export default function App() {
     const userMoveRightCorrectlyRef = useRef(false);
     const userMoveLeftCorrectlyRef = useRef(false);
 
+    const carHealthRef = useRef(100);
+
+    const gameOverRef = useRef(false);
+
     const TIME_USER_HAS_TO_REACT = 2000;
+
+    let CAR_HEALTH = 100;
 
     const SWIPE_THRESHOLD = 10;
     const onHandlerStateChange = event => {
@@ -180,61 +186,17 @@ export default function App() {
         fingerMovementBlockerRef.current.swipeLeft = false;
         fingerMovementBlockerRef.current.swipeRight = false;
 
-        setTimeout(() => {
-            thereIsDanger('left');
-        }, 2000);
+        const whereIsDanger = ['left', 'right'];
 
-        setTimeout(() => {
-            thereIsDanger('left');
-        }, 8000);
-
-        setTimeout(() => {
-            thereIsDanger('right');
-        }, 14000);
-
-        setTimeout(() => {
-            thereIsDanger('right');
-        }, 20000);
-
-        setTimeout(() => {
-            thereIsDanger('left');
-        }, 26000);
-
-        setTimeout(() => {
-            thereIsDanger('left');
-        }, 32000);
-
-        setTimeout(() => {
-            thereIsDanger('right');
-        }, 38000);
-
-        setTimeout(() => {
-            thereIsDanger('left');
-        }, 44000);
-
-        setTimeout(() => {
-            thereIsDanger('right');
-        }, 50000);
-
-        setTimeout(() => {
-            thereIsDanger('right');
-        }, 56000);
-
-        setTimeout(() => {
-            thereIsDanger('right');
-        }, 60000);
-
-        setTimeout(() => {
-            thereIsDanger('left');
-        }, 66000);
-
-        setTimeout(() => {
-            thereIsDanger('right');
-        }, 72000);
-
-        setTimeout(() => {
-            thereIsDanger('left');
-        }, 78000);
+        let i = 0;
+        const warningInterval = setInterval(() => {
+            if (i >= 14 || gameOverRef.current === true) {
+                clearInterval(warningInterval);
+                return;
+            }
+            thereIsDanger(whereIsDanger[Math.floor(Math.random() * whereIsDanger.length)]);
+            i++;
+        }, 6000);
 
         // setTimeout(() => {
         //     aiAskForRadio();
@@ -307,7 +269,7 @@ export default function App() {
             setTimeout(() => {
                 if (carMoveDirection === 'right') {
                     if (userMoveRightCorrectlyRef.current === true) {
-                        userMoveLeftCorrectlyRef.current = false;
+                        userMoveRightCorrectlyRef.current = false;
                     } else {
                         crashHandler('left');
                     }
@@ -316,6 +278,18 @@ export default function App() {
     }
 
     const crashHandler = (crashPosition) => {
+        carHealthRef.current = carHealthRef.current - 15;
+
+        if (carHealthRef.current < 100 && carHealthRef.current > 75) {
+            lowDamageWarningPlay();
+        } else if (carHealthRef.current < 50 && carHealthRef.current > 25) {
+            mediumDamageWarningPlay();
+        } else if (carHealthRef.current < 25 && carHealthRef.current > 0) {
+            highDamageWarningPlay();
+        } else if (carHealthRef.current <= 0) {
+            gameOver();
+        }
+
         if (crashPosition === 'right') {
                 const playAudio = async () => {
                     const { sound } = await Audio.Sound.createAsync(
@@ -339,6 +313,55 @@ export default function App() {
 
                 playAudio();
         }
+    }
+
+    const lowDamageWarningPlay = () => {
+        const playAudio = async () => {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/lowDamageWarning.mp3')
+            );
+
+            await sound.playAsync();
+        }
+
+        playAudio();
+    }
+
+    const mediumDamageWarningPlay = () => {
+        const playAudio = async () => {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/mediumDamageWarning.mp3')
+            );
+
+            await sound.playAsync();
+        }
+
+        playAudio();
+    }
+
+    const highDamageWarningPlay = () => {
+        const playAudio = async () => {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/highDamageWarning.mp3')
+            );
+
+            await sound.playAsync();
+        }
+
+        playAudio();
+    }
+
+    const gameOver = () => {
+        const playAudio = async () => {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/explosion.mp3')
+            );
+
+            await sound.playAsync();
+        }
+
+        playAudio();
+        gameOverRef.current = true;
     }
 
   return (
