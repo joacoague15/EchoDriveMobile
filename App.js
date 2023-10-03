@@ -6,6 +6,9 @@ import { Audio } from 'expo-av';
 export default function App() {
     // PAY ATTENTION TO SOUND CLEANUP FOR RESOURCE MANAGEMENT
 
+    // SHOOT MECHANIC
+    // WHEN CAR LOOSES HEALTH, THE CAR MAKES A SOUND
+
     const fingerMovementBlockerRef = useRef({
         swipeUp: true,
         swipeDown: true,
@@ -39,6 +42,11 @@ export default function App() {
     const rightShootWarningRef = useRef(null);
     const leftShootSoundRef = useRef(null);
     const rightShootSoundRef = useRef(null);
+
+    const gunReloadSoundRef = useRef(null);
+
+    const leftEnemyExplosionSoundRef = useRef(null);
+    const rightEnemyExplosionSoundRef = useRef(null);
 
     // Preload sounds
     useEffect(() => {
@@ -91,6 +99,27 @@ export default function App() {
             rightShootSoundRef.current = sound;
         }
 
+        async function gunReload() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/gunReload.wav')
+            );
+            gunReloadSoundRef.current = sound;
+        }
+
+        async function leftEnemyExplosion() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/leftMotorcycleExplosion.mp3')
+            );
+            leftEnemyExplosionSoundRef.current = sound;
+        }
+
+        async function rightEnemyExplosion() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/rightMotorcycleExplosion.mp3')
+            );
+            rightEnemyExplosionSoundRef.current = sound;
+        }
+
         preloadSteeringSound();
         preloadWarningLeftSound();
         preloadWarningRightSound();
@@ -98,6 +127,9 @@ export default function App() {
         preloadRightWarningShoot();
         preloadLeftShoot();
         preloadRightShoot();
+        gunReload();
+        leftEnemyExplosion();
+        rightEnemyExplosion();
 
         return () => {
             // Unload the sound from memory when component unmounts
@@ -128,6 +160,18 @@ export default function App() {
             if (rightShootWarningRef.current) {
                 rightShootWarningRef.current.unloadAsync();
             }
+
+            if (gunReloadSoundRef.current) {
+                gunReloadSoundRef.current.unloadAsync();
+            }
+
+            if (leftEnemyExplosionSoundRef.current) {
+                leftEnemyExplosionSoundRef.current.unloadAsync();
+            }
+
+            if (rightEnemyExplosionSoundRef.current) {
+                rightEnemyExplosionSoundRef.current.unloadAsync();
+            }
         };
     }, []);
 
@@ -155,21 +199,6 @@ export default function App() {
         }
     };
 
-    const playRadio = () => {
-        fingerMovementBlockerRef.current.swipeUp = true;
-        radioBlockerRef.current = true;
-
-        const playAudio = async () => {
-            const { sound } = await Audio.Sound.createAsync(
-                require('./assets/sounds/music1.m4a')
-            );
-
-            await sound.playAsync();
-        }
-
-        playAudio();
-    }
-
     const handleSteering = async (userSwipe) => {
         if (dangerInLeftRef.current === true) {
             dangerInLeftRef.current = false;
@@ -194,24 +223,7 @@ export default function App() {
 
     // PRESENTATION
         useEffect(() => {
-            // const playPresentation1 = async () => {
-            //     const { sound } = await Audio.Sound.createAsync(
-            //         require('./assets/sounds/presentacion1.mp3')
-            //     );
-            //
-            //     sound.setOnPlaybackStatusUpdate(playbackStatus => {
-            //         if (playbackStatus.didJustFinish) {
-            //             fingerMovementBlockerRef.current.tap = false;
-            //         }
-            //     });
-            //
-            //     await sound.playAsync();
-            //
-            // }
-            //
-            // playPresentation1();
             mechanicsTests();
-
         }, []);
 
     // CAR MOVING EFFECT
@@ -232,11 +244,12 @@ export default function App() {
     const handleTapGesture = async event => {
         if (event.nativeEvent.state === State.ACTIVE) {
             const tapX = event.nativeEvent.x;
-
-            if (tapX < screenWidth / 2) {
-                await handleUserShoot('left');
-            } else {
-                await handleUserShoot('right');
+            if (!fingerMovementBlockerRef.current.tap) {
+                if (tapX < screenWidth / 2) {
+                    await handleUserShoot('left');
+                } else {
+                    await handleUserShoot('right');
+                }
             }
         }
     }
@@ -244,25 +257,41 @@ export default function App() {
     const handleUserShoot = async (shootDirection) => {
         if (dangerInLeftRef.current === true) {
             dangerInLeftRef.current = false;
-
             if (shootDirection === 'left') {
                 userShootLeftCorrectlyRef.current = true;
             }
-
-            await leftShootSoundRef.current.setPositionAsync(0);
-            await leftShootSoundRef.current.playAsync();
         }
 
         if (dangerInRightRef.current === true) {
             dangerInRightRef.current = false;
-
             if (shootDirection === 'right') {
                 userShootRightCorrectlyRef.current = true;
             }
+        }
 
+        if (shootDirection === 'left') {
+            await leftShootSoundRef.current.setPositionAsync(0);
+            await leftShootSoundRef.current.playAsync();
+
+            await reload();
+        }
+
+        if (shootDirection === 'right') {
             await rightShootSoundRef.current.setPositionAsync(0);
             await rightShootSoundRef.current.playAsync();
+
+            await reload();
         }
+    }
+
+    const reload = async () => {
+        fingerMovementBlockerRef.current.tap = true;
+        await gunReloadSoundRef.current.setPositionAsync(0);
+        await gunReloadSoundRef.current.playAsync();
+
+        setTimeout(() => {
+            fingerMovementBlockerRef.current.tap = false;
+        }, 1000);
     }
 
 
@@ -373,9 +402,19 @@ export default function App() {
     }
 
     const handleShootingResult = (shootDirection) => {
+        if (shootDirection === 'left') {
+            if (userShootLeftCorrectlyRef.current === true) {
+                enemyDownLeft();
+                userShootLeftCorrectlyRef.current = false;
+            } else {
+                userReceivedBullet();
+            }
+        }
+
         setTimeout(() => {
             if (shootDirection === 'left') {
                 if (userShootLeftCorrectlyRef.current === true) {
+                    enemyDownLeft();
                     userShootLeftCorrectlyRef.current = false;
                 } else {
                     userReceivedBullet();
@@ -386,12 +425,25 @@ export default function App() {
         setTimeout(() => {
             if (shootDirection === 'right') {
                 if (userShootRightCorrectlyRef.current === true) {
+                    ememyDownRight();
                     userShootRightCorrectlyRef.current = false;
                 } else {
                     userReceivedBullet();
                 }
             }
         }, TIME_USER_HAS_TO_REACT);
+    }
+
+    const enemyDownLeft = async () => {
+        await leftShootWarningRef.current.stopAsync();
+        await leftEnemyExplosionSoundRef.current.setPositionAsync(0);
+        await leftEnemyExplosionSoundRef.current.playAsync();
+    }
+
+    const ememyDownRight = async () => {
+        await rightShootWarningRef.current.stopAsync();
+        await rightEnemyExplosionSoundRef.current.setPositionAsync(0);
+        await rightEnemyExplosionSoundRef.current.playAsync();
     }
 
     const handleSteeringResult = (carMoveDirection) => {
