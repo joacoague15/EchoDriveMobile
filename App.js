@@ -1,5 +1,5 @@
-import {Alert, Dimensions, View} from 'react-native';
-import React, {useEffect, useRef, useState} from "react";
+import { Alert, Dimensions, View } from 'react-native';
+import React, { useEffect, useRef } from "react";
 import { GestureHandlerRootView, PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import { Audio } from 'expo-av';
 
@@ -20,6 +20,8 @@ export default function App() {
 
     const userMoveRightCorrectlyRef = useRef(false);
     const userMoveLeftCorrectlyRef = useRef(false);
+    const userShootRightCorrectlyRef = useRef(false);
+    const userShootLeftCorrectlyRef = useRef(false);
 
     const carHealthRef = useRef(100);
 
@@ -32,6 +34,9 @@ export default function App() {
     const steeringSoundRef = useRef(null);
     const leftWarningSoundRef = useRef(null);
     const rightWarningSoundRef = useRef(null);
+
+    const leftShootWarningRef = useRef(null);
+    const rightShootWarningRef = useRef(null);
     const leftShootSoundRef = useRef(null);
     const rightShootSoundRef = useRef(null);
 
@@ -58,6 +63,20 @@ export default function App() {
             rightWarningSoundRef.current = sound;
         }
 
+        async function preloadLeftWarningShoot() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/shootingWarningLeft.mp3')
+            );
+            leftShootWarningRef.current = sound;
+        }
+
+        async function preloadRightWarningShoot() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/shootingWarningRight.mp3')
+            );
+            rightShootWarningRef.current = sound;
+        }
+
         async function preloadLeftShoot() {
             const { sound } = await Audio.Sound.createAsync(
                 require('./assets/sounds/leftShoot.mp3')
@@ -75,6 +94,8 @@ export default function App() {
         preloadSteeringSound();
         preloadWarningLeftSound();
         preloadWarningRightSound();
+        preloadLeftWarningShoot();
+        preloadRightWarningShoot();
         preloadLeftShoot();
         preloadRightShoot();
 
@@ -99,40 +120,37 @@ export default function App() {
             if (rightShootSoundRef.current) {
                 rightShootSoundRef.current.unloadAsync();
             }
+
+            if (leftShootWarningRef.current) {
+                leftShootWarningRef.current.unloadAsync();
+            }
+
+            if (rightShootWarningRef.current) {
+                rightShootWarningRef.current.unloadAsync();
+            }
         };
     }, []);
 
     const screenWidth = Dimensions.get('window').width;
     const onHandlerStateChange = async event => {
         if (event.nativeEvent.oldState === State.ACTIVE) {
-            const touchX = event.nativeEvent.x;
 
             // Is the finger swiping enough?
-            if (Math.abs(event.nativeEvent.translationX) < SWIPE_THRESHOLD &&
-                Math.abs(event.nativeEvent.translationY) < SWIPE_THRESHOLD) {
-                if (touchX < screenWidth / 2) {
-                    // LEFT SIDE
-                    await leftShootSoundRef.current.setPositionAsync(0);
-                    await leftShootSoundRef.current.playAsync();
-                } else {
-                    // RIGHT SIDE
-                    await rightShootSoundRef.current.setPositionAsync(0);
-                    await rightShootSoundRef.current.playAsync();
-                }
-            } else {
+            if (Math.abs(event.nativeEvent.translationX) > SWIPE_THRESHOLD &&
+                Math.abs(event.nativeEvent.translationY) > SWIPE_THRESHOLD) {
                 if (event.nativeEvent.velocityX > 0 && !fingerMovementBlockerRef.current.swipeRight) {
-                    handleSteering('right');
+                    await handleSteering('right');
                 } else if (event.nativeEvent.velocityX < 0 && !fingerMovementBlockerRef.current.swipeLeft) {
-                    handleSteering('left');
+                    await handleSteering('left');
                 }
-            }
 
-            if (event.nativeEvent.velocityY > 0 && !fingerMovementBlockerRef.current.swipeDown) {
-                Alert.alert('Swiped Down!');
-            } else if (event.nativeEvent.velocityY < 0 && !fingerMovementBlockerRef.current.swipeUp) {
-                if (radioBlockerRef.current === false) {
-                    playRadio();
-                }
+                // if (event.nativeEvent.velocityY > 0 && !fingerMovementBlockerRef.current.swipeDown) {
+                //     Alert.alert('Swiped Down!');
+                // } else if (event.nativeEvent.velocityY < 0 && !fingerMovementBlockerRef.current.swipeUp) {
+                //     if (radioBlockerRef.current === false) {
+                //         playRadio();
+                //     }
+                // }
             }
         }
     };
@@ -159,7 +177,8 @@ export default function App() {
             if (userSwipe === 'right') {
                 userMoveRightCorrectlyRef.current = true;
             }
-            steeringSoundRef.current.playAsync();
+            await steeringSoundRef.current.setPositionAsync(0);
+            await steeringSoundRef.current.playAsync();
         }
 
         if (dangerInRightRef.current === true) {
@@ -168,10 +187,9 @@ export default function App() {
             if (userSwipe === 'left') {
                 userMoveLeftCorrectlyRef.current = true;
             }
+            await steeringSoundRef.current.setPositionAsync(0);
+            await steeringSoundRef.current.playAsync();
         }
-
-        await steeringSoundRef.current.setPositionAsync(0);
-        await steeringSoundRef.current.playAsync();
     }
 
     // PRESENTATION
@@ -211,56 +229,41 @@ export default function App() {
         carMoving();
     }, []);
 
-    const handleTapGesture = event => {
+    const handleTapGesture = async event => {
         if (event.nativeEvent.state === State.ACTIVE) {
             const tapX = event.nativeEvent.x;
 
             if (tapX < screenWidth / 2) {
-                leftShootSoundRef.current.setPositionAsync(0);
-                leftShootSoundRef.current.playAsync();
+                await handleUserShoot('left');
             } else {
-                rightShootSoundRef.current.setPositionAsync(0);
-                rightShootSoundRef.current.playAsync();
-            }
-
-            if (fingerMovementBlockerRef.current.tap === false) {
-                fingerMovementBlockerRef.current.tap = true;
-                const playAudio = async () => {
-                    const { sound } = await Audio.Sound.createAsync(
-                        require('./assets/sounds/presentacion2.mp3')
-                    );
-
-                    sound.setOnPlaybackStatusUpdate(playbackStatus => {
-                        if (playbackStatus.didJustFinish) {
-                            // startFirstMechanicExplanation();
-                        }
-                    });
-
-                    await sound.playAsync();
-                }
-
-                playAudio();
+                await handleUserShoot('right');
             }
         }
     }
 
-    // const startFirstMechanicExplanation = () => {
-    //     const playAudio = async () => {
-    //         const { sound } = await Audio.Sound.createAsync(
-    //             require('./assets/sounds/mechanicExplanation.mp3')
-    //         );
-    //
-    //         sound.setOnPlaybackStatusUpdate(playbackStatus => {
-    //             if (playbackStatus.didJustFinish) {
-    //                 mechanicsTests();
-    //             }
-    //         });
-    //
-    //         await sound.playAsync();
-    //     }
-    //
-    //     playAudio();
-    // }
+    const handleUserShoot = async (shootDirection) => {
+        if (dangerInLeftRef.current === true) {
+            dangerInLeftRef.current = false;
+
+            if (shootDirection === 'left') {
+                userShootLeftCorrectlyRef.current = true;
+            }
+
+            await leftShootSoundRef.current.setPositionAsync(0);
+            await leftShootSoundRef.current.playAsync();
+        }
+
+        if (dangerInRightRef.current === true) {
+            dangerInRightRef.current = false;
+
+            if (shootDirection === 'right') {
+                userShootRightCorrectlyRef.current = true;
+            }
+
+            await rightShootSoundRef.current.setPositionAsync(0);
+            await rightShootSoundRef.current.playAsync();
+        }
+    }
 
 
     const mechanicsTests = async () => {
@@ -268,8 +271,6 @@ export default function App() {
         await firstPart();
 
         await secondPartNotification();
-
-        await secondPart();
     }
 
     const firstPart = () => {
@@ -286,7 +287,7 @@ export default function App() {
                     resolve(); // Resolve the promise when the interval completes or game over
                     return;
                 }
-                thereIsDanger(whereIsDanger[Math.floor(Math.random() * whereIsDanger.length)]);
+                thereIsDanger(whereIsDanger[Math.floor(Math.random() * whereIsDanger.length)], 'obstacle');
                 i++;
             }, 6000);
         });
@@ -312,29 +313,85 @@ export default function App() {
     }
 
     const secondPart = () => {
-        fingerMovementBlockerRef.current.swipeLeft = false;
-        fingerMovementBlockerRef.current.swipeRight = false;
+        return new Promise((resolve) => {
+            fingerMovementBlockerRef.current.tap = false;
 
+            const whereIsDanger = ['left', 'right'];
 
+            let i = 0;
+            const warningInterval = setInterval(() => {
+                if (i >= 3 || gameOverRef.current === true) {
+                    clearInterval(warningInterval);
+                    resolve(); // Resolve the promise when the interval completes or game over
+                    return;
+                }
+                thereIsDanger(whereIsDanger[Math.floor(Math.random() * whereIsDanger.length)], 'shoot');
+                i++;
+            }, 6000);
+        });
     }
-    const thereIsDanger = async (whereIsTheDanger) => {
-        if (whereIsTheDanger === 'left') {
-            dangerInLeftRef.current = true;
+    const thereIsDanger = async (whereIsTheDanger, whichKindOfDanger) => {
+        if (whichKindOfDanger === 'obstacle') {
+            if (whereIsTheDanger === 'left') {
+                dangerInLeftRef.current = true;
 
-            handleSteeringResult('right');
+                handleSteeringResult('right');
 
-            await leftWarningSoundRef.current.setPositionAsync(0);
-            await leftWarningSoundRef.current.playAsync();
+                await leftWarningSoundRef.current.setPositionAsync(0);
+                await leftWarningSoundRef.current.playAsync();
+            }
+
+            if (whereIsTheDanger === 'right') {
+                dangerInRightRef.current = true;
+
+                handleSteeringResult('left');
+
+                await rightWarningSoundRef.current.setPositionAsync(0);
+                await rightWarningSoundRef.current.playAsync();
+            }
         }
 
-        if (whereIsTheDanger === 'right') {
-            dangerInRightRef.current = true;
+        if (whichKindOfDanger === 'shoot') {
+            if (whereIsTheDanger === 'left') {
+                dangerInLeftRef.current = true;
 
-            handleSteeringResult('left');
+                handleShootingResult('left');
 
-            await rightWarningSoundRef.current.setPositionAsync(0);
-            await rightWarningSoundRef.current.playAsync();
+                await leftShootWarningRef.current.setPositionAsync(0);
+                await leftShootWarningRef.current.playAsync();
+            }
+
+            if (whereIsTheDanger === 'right') {
+                dangerInRightRef.current = true;
+
+                handleShootingResult('right');
+
+                await rightShootWarningRef.current.setPositionAsync(0);
+                await rightShootWarningRef.current.playAsync();
+            }
         }
+    }
+
+    const handleShootingResult = (shootDirection) => {
+        setTimeout(() => {
+            if (shootDirection === 'left') {
+                if (userShootLeftCorrectlyRef.current === true) {
+                    userShootLeftCorrectlyRef.current = false;
+                } else {
+                    userReceivedBullet();
+                }
+            }
+        }, TIME_USER_HAS_TO_REACT);
+
+        setTimeout(() => {
+            if (shootDirection === 'right') {
+                if (userShootRightCorrectlyRef.current === true) {
+                    userShootRightCorrectlyRef.current = false;
+                } else {
+                    userReceivedBullet();
+                }
+            }
+        }, TIME_USER_HAS_TO_REACT);
     }
 
     const handleSteeringResult = (carMoveDirection) => {
@@ -431,6 +488,10 @@ export default function App() {
         }
 
         playAudio();
+    }
+
+    const userReceivedBullet = () => {
+        console.log('BULLET RECEIVED');
     }
 
     const gameOver = () => {
