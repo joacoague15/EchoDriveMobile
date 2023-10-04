@@ -48,6 +48,12 @@ export default function App() {
     const leftEnemyExplosionSoundRef = useRef(null);
     const rightEnemyExplosionSoundRef = useRef(null);
 
+    const lighterSoundRef = useRef(null);
+    const cigaretteSmokeSoundRef = useRef(null);
+    const coughSoundRef = useRef(null);
+
+    const howManyTimesUserSmokesCigaretteRef = useRef(0);
+
     // Preload sounds
     useEffect(() => {
         async function preloadSteeringSound() {
@@ -120,6 +126,27 @@ export default function App() {
             rightEnemyExplosionSoundRef.current = sound;
         }
 
+        async function preloadLighterSound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/lighterSound.wav')
+            );
+            lighterSoundRef.current = sound;
+        }
+
+        async function preloadCigaretteSmokeSound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/smokingSound.wav')
+            );
+            cigaretteSmokeSoundRef.current = sound;
+        }
+
+        async function preloadCoughSound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/cough.wav')
+            );
+            coughSoundRef.current = sound;
+        }
+
         preloadSteeringSound();
         preloadWarningLeftSound();
         preloadWarningRightSound();
@@ -130,6 +157,9 @@ export default function App() {
         gunReload();
         leftEnemyExplosion();
         rightEnemyExplosion();
+        preloadLighterSound();
+        preloadCigaretteSmokeSound();
+        preloadCoughSound();
 
         return () => {
             // Unload the sound from memory when component unmounts
@@ -172,6 +202,18 @@ export default function App() {
             if (rightEnemyExplosionSoundRef.current) {
                 rightEnemyExplosionSoundRef.current.unloadAsync();
             }
+
+            if (lighterSoundRef.current) {
+                lighterSoundRef.current.unloadAsync();
+            }
+
+            if (cigaretteSmokeSoundRef.current) {
+                cigaretteSmokeSoundRef.current.unloadAsync();
+            }
+
+            if (coughSoundRef.current) {
+                coughSoundRef.current.unloadAsync();
+            }
         };
     }, []);
 
@@ -188,9 +230,10 @@ export default function App() {
                     await handleSteering('left');
                 }
 
-                // if (event.nativeEvent.velocityY > 0 && !fingerMovementBlockerRef.current.swipeDown) {
-                //     Alert.alert('Swiped Down!');
-                // } else if (event.nativeEvent.velocityY < 0 && !fingerMovementBlockerRef.current.swipeUp) {
+                if (event.nativeEvent.velocityY > 0 && !fingerMovementBlockerRef.current.swipeDown) {
+                    handleSwipeDown();
+                }
+                // else if (event.nativeEvent.velocityY < 0 && !fingerMovementBlockerRef.current.swipeUp) {
                 //     if (radioBlockerRef.current === false) {
                 //         playRadio();
                 //     }
@@ -296,10 +339,10 @@ export default function App() {
 
 
     const mechanicsTests = async () => {
-
-        await firstPart();
-
-        await secondPartNotification();
+        thirdPart();
+        // await firstPart();
+        //
+        // await secondPartNotification();
     }
 
     const firstPart = () => {
@@ -352,12 +395,67 @@ export default function App() {
                 if (i >= 3 || gameOverRef.current === true) {
                     clearInterval(warningInterval);
                     resolve(); // Resolve the promise when the interval completes or game over
+                    thirdPartNotification();
                     return;
                 }
                 thereIsDanger(whereIsDanger[Math.floor(Math.random() * whereIsDanger.length)], 'shoot');
                 i++;
             }, 6000);
         });
+    }
+
+    const thirdPartNotification = () => {
+        const playAudio = async () => {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/thirdPartNotification.mp3')
+            );
+
+            sound.setOnPlaybackStatusUpdate(playbackStatus => {
+                if (playbackStatus.didJustFinish) {
+                    thirdPart();
+                }
+            });
+
+            await sound.playAsync();
+        }
+
+        playAudio();
+    }
+
+    const thirdPart = () => {
+        fingerMovementBlockerRef.current.swipeDown = false;
+    }
+
+    const handleSwipeDown = async () => {
+        if (howManyTimesUserSmokesCigaretteRef.current === 0) {
+            fingerMovementBlockerRef.current.swipeDown = true;
+            howManyTimesUserSmokesCigaretteRef.current = howManyTimesUserSmokesCigaretteRef.current + 1;
+
+            await lighterSoundRef.current.setPositionAsync(0);
+            await lighterSoundRef.current.playAsync();
+            fingerMovementBlockerRef.current.swipeDown = false;
+        } else if (howManyTimesUserSmokesCigaretteRef.current > 0 && howManyTimesUserSmokesCigaretteRef.current < 3) {
+            fingerMovementBlockerRef.current.swipeDown = true;
+            howManyTimesUserSmokesCigaretteRef.current = howManyTimesUserSmokesCigaretteRef.current + 1;
+
+            await cigaretteSmokeSoundRef.current.setPositionAsync(0);
+            await cigaretteSmokeSoundRef.current.playAsync();
+            fingerMovementBlockerRef.current.swipeDown = false;
+        } else {
+            fingerMovementBlockerRef.current.swipeDown = true;
+            howManyTimesUserSmokesCigaretteRef.current = 0;
+
+            await cigaretteSmokeSoundRef.current.setPositionAsync(0);
+            await cigaretteSmokeSoundRef.current.playAsync();
+
+            setTimeout(() => {
+                coughSoundRef.current.setPositionAsync(0);
+                coughSoundRef.current.playAsync();
+                fingerMovementBlockerRef.current.swipeDown = false;
+
+                howManyTimesUserSmokesCigaretteRef.current = 0;
+            }, 4000);
+        }
     }
     const thereIsDanger = async (whereIsTheDanger, whichKindOfDanger) => {
         if (whichKindOfDanger === 'obstacle') {
