@@ -6,8 +6,9 @@ import { Audio } from 'expo-av';
 export default function App() {
     // PAY ATTENTION TO SOUND CLEANUP FOR RESOURCE MANAGEMENT
 
-    // SHOOT MECHANIC
-    // WHEN CAR LOOSES HEALTH, THE CAR MAKES A SOUND
+    // CHANGE STEERING SOUND
+    // SHOOTING NEEDS SOMETHING ELSE?
+    // ADD SIMPLE EXPLANATIONS
 
     const fingerMovementBlockerRef = useRef({
         swipeUp: true,
@@ -53,6 +54,11 @@ export default function App() {
     const coughSoundRef = useRef(null);
 
     const howManyTimesUserSmokesCigaretteRef = useRef(0);
+
+    const music1Ref = useRef(null);
+    const music2Ref = useRef(null);
+    const music3Ref = useRef(null);
+    const changeMusicEffectRef = useRef(null);
 
     // Preload sounds
     useEffect(() => {
@@ -147,6 +153,35 @@ export default function App() {
             coughSoundRef.current = sound;
         }
 
+        async function preloadMusic1() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/music1.wav')
+            );
+            music1Ref.current = sound;
+        }
+
+        async function preloadMusic2() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/music2.wav')
+            );
+            music2Ref.current = sound;
+        }
+
+        async function preloadMusic3() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/music3.wav')
+            );
+            music3Ref.current = sound;
+        }
+
+        async function preloadChangeMusicEffect() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/changeMusicEffect.wav')
+            );
+            changeMusicEffectRef.current = sound;
+        }
+
+
         preloadSteeringSound();
         preloadWarningLeftSound();
         preloadWarningRightSound();
@@ -160,6 +195,10 @@ export default function App() {
         preloadLighterSound();
         preloadCigaretteSmokeSound();
         preloadCoughSound();
+        preloadMusic1();
+        preloadMusic2();
+        preloadMusic3();
+        preloadChangeMusicEffect();
 
         return () => {
             // Unload the sound from memory when component unmounts
@@ -214,6 +253,22 @@ export default function App() {
             if (coughSoundRef.current) {
                 coughSoundRef.current.unloadAsync();
             }
+
+            if (music1Ref.current) {
+                music1Ref.current.unloadAsync();
+            }
+
+            if (music2Ref.current) {
+                music2Ref.current.unloadAsync();
+            }
+
+            if (music3Ref.current) {
+                music3Ref.current.unloadAsync();
+            }
+
+            if (changeMusicEffectRef.current) {
+                changeMusicEffectRef.current.unloadAsync();
+            }
         };
     }, []);
 
@@ -232,12 +287,9 @@ export default function App() {
 
                 if (event.nativeEvent.velocityY > 0 && !fingerMovementBlockerRef.current.swipeDown) {
                     handleSwipeDown();
+                } else if (event.nativeEvent.velocityY < 0 && !fingerMovementBlockerRef.current.swipeUp) {
+                    handleChangeMusic();
                 }
-                // else if (event.nativeEvent.velocityY < 0 && !fingerMovementBlockerRef.current.swipeUp) {
-                //     if (radioBlockerRef.current === false) {
-                //         playRadio();
-                //     }
-                // }
             }
         }
     };
@@ -424,6 +476,7 @@ export default function App() {
 
     const thirdPart = () => {
         fingerMovementBlockerRef.current.swipeDown = false;
+        fingerMovementBlockerRef.current.swipeUp = false;
     }
 
     const handleSwipeDown = async () => {
@@ -456,6 +509,48 @@ export default function App() {
                 howManyTimesUserSmokesCigaretteRef.current = 0;
             }, 4000);
         }
+    }
+
+    const handleChangeMusic = async () => {
+        fingerMovementBlockerRef.current.swipeUp = true;
+
+        await changeMusicEffectRef.current.setPositionAsync(0);
+        await changeMusicEffectRef.current.setVolumeAsync(0.5);
+        await changeMusicEffectRef.current.playAsync();
+
+            await music1Ref.current.pauseAsync();
+            await music2Ref.current.pauseAsync();
+            await music3Ref.current.pauseAsync();
+
+        setTimeout(async () => {
+            const randomMusic = Math.floor(Math.random() * 3) + 1; // Generates a random number between 1 and 3
+
+            switch(randomMusic) {
+                case 1:
+                    await music1Ref.current.setPositionAsync(0);
+                    await music1Ref.current.setVolumeAsync(0.2);
+                    await music1Ref.current.setIsLoopingAsync(true);
+                    await music1Ref.current.playAsync();
+                    break;
+                case 2:
+                    await music2Ref.current.setPositionAsync(0);
+                    await music2Ref.current.setVolumeAsync(0.2);
+                    await music2Ref.current.setIsLoopingAsync(true);
+                    await music2Ref.current.playAsync();
+                    break;
+                case 3:
+                    await music3Ref.current.setPositionAsync(0);
+                    await music3Ref.current.setVolumeAsync(0.2);
+                    await music3Ref.current.setIsLoopingAsync(true);
+                    await music3Ref.current.playAsync();
+                    break;
+            }
+        }, 1000);
+
+
+        setTimeout(() => {
+            fingerMovementBlockerRef.current.swipeUp = false;
+        }, 3000);
     }
     const thereIsDanger = async (whereIsTheDanger, whichKindOfDanger) => {
         if (whichKindOfDanger === 'obstacle') {
@@ -670,3 +765,12 @@ export default function App() {
       </GestureHandlerRootView>
   );
 }
+
+
+
+
+
+
+
+
+
