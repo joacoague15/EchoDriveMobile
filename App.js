@@ -15,7 +15,9 @@ export default function App() {
         swipeRight: true,
         tap: true
     });
-    const radioBlockerRef = useRef(true);
+
+    const presentation2Ref = useRef(null);
+    const presentation3Ref = useRef(null);
 
     const dangerInRightRef = useRef(false);
     const dangerInLeftRef = useRef(false);
@@ -67,6 +69,19 @@ export default function App() {
 
     // Preload sounds
     useEffect(() => {
+        async function preloadPresentation2Sound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/presentacion2.mp3')
+            );
+            presentation2Ref.current = sound;
+        }
+
+        async function preloadPresentation3Sound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/presentacion3.mp3')
+            );
+            presentation3Ref.current = sound;
+        }
         async function preloadSteeringSound() {
             const { sound } = await Audio.Sound.createAsync(
                 require('./assets/sounds/carSteering.wav')
@@ -207,7 +222,8 @@ export default function App() {
             noShieldsWarningRef.current = sound;
         }
 
-
+        preloadPresentation2Sound();
+        preloadPresentation3Sound();
         preloadSteeringSound();
         preloadWarningLeftSound();
         preloadWarningRightSound();
@@ -231,6 +247,14 @@ export default function App() {
 
         return () => {
             // Unload the sound from memory when component unmounts
+            if (presentation2Ref.current) {
+                presentation2Ref.current.unloadAsync();
+            }
+
+            if (presentation3Ref.current) {
+                presentation3Ref.current.unloadAsync();
+            }
+
             if (steeringSoundRef.current) {
                 steeringSoundRef.current.unloadAsync();
             }
@@ -349,7 +373,7 @@ export default function App() {
 
     // PRESENTATION
         useEffect(() => {
-            mechanicsTests();
+            presentationNotification1();
         }, []);
 
     // CAR MOVING EFFECT
@@ -418,13 +442,38 @@ export default function App() {
         }, 1000);
     }
 
+    const presentationNotification1 = async () => {
+        const playPresentation1 = async () => {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/presentacion1.mp3')
+            );
 
-    const mechanicsTests = async () => {
-        // thirdPart();
-        await secondPart();
-        // await firstPart();
-        //
-        // await secondPartNotification();
+            await sound.playAsync();
+        }
+
+        playPresentation1();
+
+        setTimeout(() => {
+            firstPart();
+        }, 22000);
+    }
+
+    const presentationNotification2 = async () => {
+        await presentation2Ref.current.setPositionAsync(0);
+        await presentation2Ref.current.playAsync();
+
+        setTimeout(() => {
+            secondPart();
+        }, 28000);
+    }
+
+    const presentationNotification3 = async () => {
+        await presentation3Ref.current.setPositionAsync(0);
+        await presentation3Ref.current.playAsync();
+
+        setTimeout(() => {
+            thirdPart();
+        }, 22000);
     }
 
     const firstPart = () => {
@@ -439,6 +488,7 @@ export default function App() {
                 if (i >= 3 || gameOverRef.current === true) {
                     clearInterval(warningInterval);
                     resolve(); // Resolve the promise when the interval completes or game over
+                    presentationNotification2();
                     return;
                 }
                 thereIsDanger(whereIsDanger[Math.floor(Math.random() * whereIsDanger.length)], 'obstacle');
@@ -446,26 +496,6 @@ export default function App() {
             }, 6000);
         });
     }
-    const secondPartNotification = async () => {
-        fingerMovementBlockerRef.current.swipeLeft = true;
-        fingerMovementBlockerRef.current.swipeRight = true;
-        const playAudio = async () => {
-            const { sound } = await Audio.Sound.createAsync(
-                require('./assets/sounds/secondPartNotification.mp3')
-            );
-
-            sound.setOnPlaybackStatusUpdate(playbackStatus => {
-                if (playbackStatus.didJustFinish) {
-                    secondPart();
-                }
-            });
-
-            await sound.playAsync();
-        }
-
-        playAudio();
-    }
-
     const secondPart = () => {
         return new Promise((resolve) => {
             fingerMovementBlockerRef.current.tap = false;
@@ -477,7 +507,7 @@ export default function App() {
                 if (i >= 3 || gameOverRef.current === true) {
                     clearInterval(warningInterval);
                     resolve(); // Resolve the promise when the interval completes or game over
-                    thirdPartNotification();
+                    presentationNotification3();
                     return;
                 }
                 thereIsDanger(whereIsDanger[Math.floor(Math.random() * whereIsDanger.length)], 'shoot');
@@ -485,25 +515,6 @@ export default function App() {
             }, 6000);
         });
     }
-
-    const thirdPartNotification = () => {
-        const playAudio = async () => {
-            const { sound } = await Audio.Sound.createAsync(
-                require('./assets/sounds/thirdPartNotification.mp3')
-            );
-
-            sound.setOnPlaybackStatusUpdate(playbackStatus => {
-                if (playbackStatus.didJustFinish) {
-                    thirdPart();
-                }
-            });
-
-            await sound.playAsync();
-        }
-
-        playAudio();
-    }
-
     const thirdPart = () => {
         fingerMovementBlockerRef.current.swipeDown = false;
         fingerMovementBlockerRef.current.swipeUp = false;
