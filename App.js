@@ -6,8 +6,6 @@ import { Audio } from 'expo-av';
 export default function App() {
     // PAY ATTENTION TO SOUND CLEANUP FOR RESOURCE MANAGEMENT
 
-    // CHANGE STEERING SOUND
-    // SHOOTING NEEDS SOMETHING ELSE?
     // ADD SIMPLE EXPLANATIONS
 
     const fingerMovementBlockerRef = useRef({
@@ -31,7 +29,7 @@ export default function App() {
 
     const gameOverRef = useRef(false);
 
-    const TIME_USER_HAS_TO_REACT = 2000;
+    const TIME_USER_HAS_TO_REACT = 4000;
 
     const SWIPE_THRESHOLD = 10;
 
@@ -43,6 +41,9 @@ export default function App() {
     const rightShootWarningRef = useRef(null);
     const leftShootSoundRef = useRef(null);
     const rightShootSoundRef = useRef(null);
+
+    const bulletsEnemyReceivedLeftRef = useRef(0);
+    const bulletsEnemyReceivedRightRef = useRef(0);
 
     const gunReloadSoundRef = useRef(null);
 
@@ -60,11 +61,15 @@ export default function App() {
     const music3Ref = useRef(null);
     const changeMusicEffectRef = useRef(null);
 
+    const mediumShieldsWarningRef = useRef(null);
+    const criticalShieldsWarningRef = useRef(null);
+    const noShieldsWarningRef = useRef(null);
+
     // Preload sounds
     useEffect(() => {
         async function preloadSteeringSound() {
             const { sound } = await Audio.Sound.createAsync(
-                require('./assets/sounds/carSteering.mp3')
+                require('./assets/sounds/carSteering.wav')
             );
             steeringSoundRef.current = sound;
         }
@@ -181,6 +186,27 @@ export default function App() {
             changeMusicEffectRef.current = sound;
         }
 
+        async function preloadMediumShieldsWarning() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/mediumShieldsWarning.mp3')
+            );
+            mediumShieldsWarningRef.current = sound;
+        }
+
+        async function preloadCriticalShieldsWarning() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/criticalShieldsWarning.mp3')
+            );
+            criticalShieldsWarningRef.current = sound;
+        }
+
+        async function preloadNoShieldsWarning() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/noShieldsWarning.mp3')
+            );
+            noShieldsWarningRef.current = sound;
+        }
+
 
         preloadSteeringSound();
         preloadWarningLeftSound();
@@ -199,6 +225,9 @@ export default function App() {
         preloadMusic2();
         preloadMusic3();
         preloadChangeMusicEffect();
+        preloadMediumShieldsWarning();
+        preloadCriticalShieldsWarning();
+        preloadNoShieldsWarning();
 
         return () => {
             // Unload the sound from memory when component unmounts
@@ -274,20 +303,22 @@ export default function App() {
 
     const screenWidth = Dimensions.get('window').width;
     const onHandlerStateChange = async event => {
-        if (event.nativeEvent.oldState === State.ACTIVE) {
+        const { oldState, translationX, translationY, velocityX, velocityY } = event.nativeEvent;
+
+        if (oldState === State.ACTIVE) {
 
             // Is the finger swiping enough?
-            if (Math.abs(event.nativeEvent.translationX) > SWIPE_THRESHOLD &&
-                Math.abs(event.nativeEvent.translationY) > SWIPE_THRESHOLD) {
-                if (event.nativeEvent.velocityX > 0 && !fingerMovementBlockerRef.current.swipeRight) {
+            if (Math.abs(translationX) > SWIPE_THRESHOLD &&
+                Math.abs(translationY) > SWIPE_THRESHOLD) {
+                if (velocityX > 0 && !fingerMovementBlockerRef.current.swipeRight) {
                     await handleSteering('right');
                 } else if (event.nativeEvent.velocityX < 0 && !fingerMovementBlockerRef.current.swipeLeft) {
                     await handleSteering('left');
                 }
 
-                if (event.nativeEvent.velocityY > 0 && !fingerMovementBlockerRef.current.swipeDown) {
+                if (velocityY > 0 && !fingerMovementBlockerRef.current.swipeDown) {
                     handleSwipeDown();
-                } else if (event.nativeEvent.velocityY < 0 && !fingerMovementBlockerRef.current.swipeUp) {
+                } else if (velocityY < 0 && !fingerMovementBlockerRef.current.swipeUp) {
                     handleChangeMusic();
                 }
             }
@@ -351,16 +382,14 @@ export default function App() {
 
     const handleUserShoot = async (shootDirection) => {
         if (dangerInLeftRef.current === true) {
-            dangerInLeftRef.current = false;
             if (shootDirection === 'left') {
-                userShootLeftCorrectlyRef.current = true;
+                bulletsEnemyReceivedLeftRef.current = bulletsEnemyReceivedLeftRef.current + 1;
             }
         }
 
         if (dangerInRightRef.current === true) {
-            dangerInRightRef.current = false;
             if (shootDirection === 'right') {
-                userShootRightCorrectlyRef.current = true;
+                bulletsEnemyReceivedRightRef.current = bulletsEnemyReceivedRightRef.current + 1;
             }
         }
 
@@ -391,7 +420,8 @@ export default function App() {
 
 
     const mechanicsTests = async () => {
-        thirdPart();
+        // thirdPart();
+        await secondPart();
         // await firstPart();
         //
         // await secondPartNotification();
@@ -550,7 +580,7 @@ export default function App() {
 
         setTimeout(() => {
             fingerMovementBlockerRef.current.swipeUp = false;
-        }, 3000);
+        }, 2000);
     }
     const thereIsDanger = async (whereIsTheDanger, whichKindOfDanger) => {
         if (whichKindOfDanger === 'obstacle') {
@@ -597,34 +627,30 @@ export default function App() {
     const handleShootingResult = (shootDirection) => {
         if (shootDirection === 'left') {
             if (userShootLeftCorrectlyRef.current === true) {
-                enemyDownLeft();
                 userShootLeftCorrectlyRef.current = false;
-            } else {
-                userReceivedBullet();
+            }
+        }
+
+        if (shootDirection === 'right') {
+            if (userShootRightCorrectlyRef.current === true) {
+                userShootRightCorrectlyRef.current = false;
             }
         }
 
         setTimeout(() => {
-            if (shootDirection === 'left') {
-                if (userShootLeftCorrectlyRef.current === true) {
-                    enemyDownLeft();
-                    userShootLeftCorrectlyRef.current = false;
-                } else {
-                    userReceivedBullet();
-                }
+            if (bulletsEnemyReceivedLeftRef.current >= 2) {
+                dangerInLeftRef.current = false;
+                enemyDownLeft();
+                bulletsEnemyReceivedLeftRef.current = 0;
+            } else if (bulletsEnemyReceivedRightRef.current >= 2) {
+                dangerInRightRef.current = false;
+                ememyDownRight();
+                bulletsEnemyReceivedRightRef.current = 0;
+            } else {
+                userReceivedBullet();
             }
         }, TIME_USER_HAS_TO_REACT);
 
-        setTimeout(() => {
-            if (shootDirection === 'right') {
-                if (userShootRightCorrectlyRef.current === true) {
-                    ememyDownRight();
-                    userShootRightCorrectlyRef.current = false;
-                } else {
-                    userReceivedBullet();
-                }
-            }
-        }, TIME_USER_HAS_TO_REACT);
     }
 
     const enemyDownLeft = async () => {
@@ -736,7 +762,20 @@ export default function App() {
     }
 
     const userReceivedBullet = () => {
-        console.log('BULLET RECEIVED');
+        carHealthRef.current = carHealthRef.current - 15;
+
+        if (carHealthRef.current < 100 && carHealthRef.current > 75) {
+            mediumShieldsWarningRef.current.setPositionAsync(0);
+            mediumShieldsWarningRef.current.playAsync();
+        } else if (carHealthRef.current < 50 && carHealthRef.current > 25) {
+            criticalShieldsWarningRef.current.setPositionAsync(0);
+            criticalShieldsWarningRef.current.playAsync();
+        } else if (carHealthRef.current < 25 && carHealthRef.current > 0) {
+            noShieldsWarningRef.current.setPositionAsync(0);
+            noShieldsWarningRef.current.playAsync();
+        } else if (carHealthRef.current <= 0) {
+            gameOver();
+        }
     }
 
     const gameOver = () => {
