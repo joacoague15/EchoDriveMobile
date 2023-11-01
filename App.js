@@ -6,8 +6,6 @@ import { Audio } from 'expo-av';
 export default function App() {
     // PAY ATTENTION TO SOUND CLEANUP FOR RESOURCE MANAGEMENT
 
-    // ADD SIMPLE EXPLANATIONS
-
     const fingerMovementBlockerRef = useRef({
         swipeUp: true,
         swipeDown: true,
@@ -15,6 +13,10 @@ export default function App() {
         swipeRight: true,
         tap: true
     });
+
+    const lailaPresentationRef = useRef(null);
+    const firstFriendCallRef = useRef(null);
+    const lailaSaysFirstObjetiveRef = useRef(null);
 
     const presentation2Ref = useRef(null);
     const presentation3Ref = useRef(null);
@@ -69,6 +71,27 @@ export default function App() {
 
     // Preload sounds
     useEffect(() => {
+        async function preloadLailaPresentationSound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/LailaPresentation.mp3')
+            );
+            lailaPresentationRef.current = sound;
+        }
+
+        async function preloadFirstFriendCallSound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/firstFriendCall.mp3')
+            );
+            firstFriendCallRef.current = sound;
+        }
+
+        async function preloadLailaSaysFirstObjetiveSound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/LailaSaysFirstObjetive.mp3')
+            );
+            lailaSaysFirstObjetiveRef.current = sound;
+        }
+
         async function preloadPresentation2Sound() {
             const { sound } = await Audio.Sound.createAsync(
                 require('./assets/sounds/presentacion2.mp3')
@@ -222,6 +245,9 @@ export default function App() {
             noShieldsWarningRef.current = sound;
         }
 
+        preloadLailaPresentationSound();
+        preloadFirstFriendCallSound();
+        preloadLailaSaysFirstObjetiveSound();
         preloadPresentation2Sound();
         preloadPresentation3Sound();
         preloadSteeringSound();
@@ -247,6 +273,18 @@ export default function App() {
 
         return () => {
             // Unload the sound from memory when component unmounts
+            if (lailaPresentationRef.current) {
+                lailaPresentationRef.current.unloadAsync();
+            }
+
+            if (firstFriendCallRef.current) {
+                firstFriendCallRef.current.unloadAsync();
+            }
+
+            if (lailaSaysFirstObjetiveRef.current) {
+                lailaSaysFirstObjetiveRef.current.unloadAsync();
+            }
+
             if (presentation2Ref.current) {
                 presentation2Ref.current.unloadAsync();
             }
@@ -371,12 +409,36 @@ export default function App() {
         }
     }
 
-    // PRESENTATION
         useEffect(() => {
-            presentationNotification1();
+            thirdMechanic();
+
+            // THIS TIMEOUT IS ONLY FOR LOADING, THERE IS A BETTER WAY TO DO THIS
+            // REDUCE MUSIC WHEN SPEAK
+            setTimeout(() => {
+                lailaPresentationRef.current.setPositionAsync(0);
+                lailaPresentationRef.current.playAsync();
+            }, 8000);
+
+            // CALL EFFECT
+
+            setTimeout(() => {
+                firstFriendCallRef.current.setPositionAsync(0);
+                firstFriendCallRef.current.playAsync();
+            }, 100000);
+
+            // CALL ENDS EFFECT
+
+            setTimeout(() => {
+                lailaSaysFirstObjetiveRef.current.setPositionAsync(0);
+                lailaSaysFirstObjetiveRef.current.playAsync();
+            }, 100000 + 100000);
+
+            setTimeout(() => {
+                // Start the first mechanic (add music)
+            }, 30000);
+
         }, []);
 
-    // CAR MOVING EFFECT
     useEffect(() => {
         const carMoving = async () => {
             const { sound } = await Audio.Sound.createAsync(
@@ -442,22 +504,6 @@ export default function App() {
         }, 1000);
     }
 
-    const presentationNotification1 = async () => {
-        const playPresentation1 = async () => {
-            const { sound } = await Audio.Sound.createAsync(
-                require('./assets/sounds/presentacion1.mp3')
-            );
-
-            await sound.playAsync();
-        }
-
-        playPresentation1();
-
-        setTimeout(() => {
-            firstPart();
-        }, 22000);
-    }
-
     const presentationNotification2 = async () => {
         await presentation2Ref.current.setPositionAsync(0);
         await presentation2Ref.current.playAsync();
@@ -465,15 +511,6 @@ export default function App() {
         setTimeout(() => {
             secondPart();
         }, 28000);
-    }
-
-    const presentationNotification3 = async () => {
-        await presentation3Ref.current.setPositionAsync(0);
-        await presentation3Ref.current.playAsync();
-
-        setTimeout(() => {
-            thirdPart();
-        }, 22000);
     }
 
     const firstPart = () => {
@@ -507,7 +544,6 @@ export default function App() {
                 if (i >= 3 || gameOverRef.current === true) {
                     clearInterval(warningInterval);
                     resolve(); // Resolve the promise when the interval completes or game over
-                    presentationNotification3();
                     return;
                 }
                 thereIsDanger(whereIsDanger[Math.floor(Math.random() * whereIsDanger.length)], 'shoot');
@@ -515,7 +551,12 @@ export default function App() {
             }, 6000);
         });
     }
-    const thirdPart = () => {
+    const thirdMechanic = () => {
+        fingerMovementBlockerRef.current.swipeDown = false;
+        fingerMovementBlockerRef.current.swipeUp = false;
+    }
+
+    const endThirdMechanic = () => {
         fingerMovementBlockerRef.current.swipeDown = false;
         fingerMovementBlockerRef.current.swipeUp = false;
     }
@@ -564,7 +605,7 @@ export default function App() {
             await music3Ref.current.pauseAsync();
 
         setTimeout(async () => {
-            const randomMusic = Math.floor(Math.random() * 3) + 1; // Generates a random number between 1 and 3
+            const randomMusic = Math.floor(Math.random() * 3) + 1;
 
             switch(randomMusic) {
                 case 1:
