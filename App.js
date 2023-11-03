@@ -17,6 +17,7 @@ export default function App() {
     const lailaPresentationRef = useRef(null);
     const firstFriendCallRef = useRef(null);
     const lailaSaysFirstObjetiveRef = useRef(null);
+    const callEntranceEffectRef = useRef(null);
 
     const presentation2Ref = useRef(null);
     const presentation3Ref = useRef(null);
@@ -76,6 +77,13 @@ export default function App() {
                 require('./assets/sounds/LailaPresentation.mp3')
             );
             lailaPresentationRef.current = sound;
+        }
+
+        async function preloadCallEntranceEffectSound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/callEntranceEffect.wav')
+            );
+            callEntranceEffectRef.current = sound;
         }
 
         async function preloadFirstFriendCallSound() {
@@ -246,6 +254,7 @@ export default function App() {
         }
 
         preloadLailaPresentationSound();
+        preloadCallEntranceEffectSound();
         preloadFirstFriendCallSound();
         preloadLailaSaysFirstObjetiveSound();
         preloadPresentation2Sound();
@@ -275,6 +284,10 @@ export default function App() {
             // Unload the sound from memory when component unmounts
             if (lailaPresentationRef.current) {
                 lailaPresentationRef.current.unloadAsync();
+            }
+
+            if (callEntranceEffectRef.current) {
+                callEntranceEffectRef.current.unloadAsync();
             }
 
             if (firstFriendCallRef.current) {
@@ -410,32 +423,33 @@ export default function App() {
     }
 
         useEffect(() => {
-            thirdMechanic();
-
             // THIS TIMEOUT IS ONLY FOR LOADING, THERE IS A BETTER WAY TO DO THIS
-            // REDUCE MUSIC WHEN SPEAK
             setTimeout(() => {
-                lailaPresentationRef.current.setPositionAsync(0);
-                lailaPresentationRef.current.playAsync();
+                callEntranceEffectRef.current.setPositionAsync(0);
+                callEntranceEffectRef.current.playAsync();
             }, 8000);
-
-            // CALL EFFECT
 
             setTimeout(() => {
                 firstFriendCallRef.current.setPositionAsync(0);
                 firstFriendCallRef.current.playAsync();
-            }, 100000);
-
-            // CALL ENDS EFFECT
+            }, 12000);
 
             setTimeout(() => {
+                lailaPresentationRef.current.setPositionAsync(0);
+                lailaPresentationRef.current.playAsync();
+                thirdMechanic();
+            }, 70000);
+
+            setTimeout(async () => {
+                await endThirdMechanic();
                 lailaSaysFirstObjetiveRef.current.setPositionAsync(0);
                 lailaSaysFirstObjetiveRef.current.playAsync();
-            }, 100000 + 100000);
+            }, 8000 + 12000 + 70000 + 60000);
 
-            setTimeout(() => {
-                // Start the first mechanic (add music)
-            }, 30000);
+            setTimeout(async () => {
+                // add music
+                await firstMechanic();
+            }, 8000 + 12000 + 70000 + 60000 + 22000);
 
         }, []);
 
@@ -513,7 +527,7 @@ export default function App() {
         }, 28000);
     }
 
-    const firstPart = () => {
+    const firstMechanic = () => {
         return new Promise((resolve) => {
             fingerMovementBlockerRef.current.swipeLeft = false;
             fingerMovementBlockerRef.current.swipeRight = false;
@@ -525,7 +539,7 @@ export default function App() {
                 if (i >= 3 || gameOverRef.current === true) {
                     clearInterval(warningInterval);
                     resolve(); // Resolve the promise when the interval completes or game over
-                    presentationNotification2();
+                    // ARRIVED TO TROYANO
                     return;
                 }
                 thereIsDanger(whereIsDanger[Math.floor(Math.random() * whereIsDanger.length)], 'obstacle');
@@ -556,9 +570,13 @@ export default function App() {
         fingerMovementBlockerRef.current.swipeUp = false;
     }
 
-    const endThirdMechanic = () => {
-        fingerMovementBlockerRef.current.swipeDown = false;
-        fingerMovementBlockerRef.current.swipeUp = false;
+    const endThirdMechanic = async () => {
+        fingerMovementBlockerRef.current.swipeDown = true;
+        fingerMovementBlockerRef.current.swipeUp = true;
+
+        music1Ref.current.pauseAsync();
+        music2Ref.current.pauseAsync();
+        music3Ref.current.pauseAsync();
     }
 
     const handleSwipeDown = async () => {
@@ -567,6 +585,7 @@ export default function App() {
             howManyTimesUserSmokesCigaretteRef.current = howManyTimesUserSmokesCigaretteRef.current + 1;
 
             await lighterSoundRef.current.setPositionAsync(0);
+            await lighterSoundRef.current.setVolumeAsync(0.8);
             await lighterSoundRef.current.playAsync();
             fingerMovementBlockerRef.current.swipeDown = false;
         } else if (howManyTimesUserSmokesCigaretteRef.current > 0 && howManyTimesUserSmokesCigaretteRef.current < 3) {
@@ -597,7 +616,7 @@ export default function App() {
         fingerMovementBlockerRef.current.swipeUp = true;
 
         await changeMusicEffectRef.current.setPositionAsync(0);
-        await changeMusicEffectRef.current.setVolumeAsync(0.5);
+        await changeMusicEffectRef.current.setVolumeAsync(0.2);
         await changeMusicEffectRef.current.playAsync();
 
             await music1Ref.current.pauseAsync();
