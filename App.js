@@ -538,7 +538,7 @@ export default function App() {
             const warningInterval = setInterval(() => {
                 if (i >= 3 || gameOverRef.current === true) {
                     clearInterval(warningInterval);
-                    resolve(); // Resolve the promise when the interval completes or game over
+                    resolve(); // Resolve the promise when the interval completes
                     // ARRIVED TO TROYANO
                     return;
                 }
@@ -768,7 +768,8 @@ export default function App() {
         } else if (carHealthRef.current < 25 && carHealthRef.current > 0) {
             highDamageWarningPlay();
         } else if (carHealthRef.current <= 0) {
-            gameOver();
+            // gameOver();
+            highDamageWarningPlay();
         }
 
         if (crashPosition === 'right') {
@@ -845,22 +846,24 @@ export default function App() {
             noShieldsWarningRef.current.setPositionAsync(0);
             noShieldsWarningRef.current.playAsync();
         } else if (carHealthRef.current <= 0) {
-            gameOver();
+            noShieldsWarningRef.current.setPositionAsync(0);
+            noShieldsWarningRef.current.playAsync();
+            // gameOver();
         }
     }
 
-    const gameOver = () => {
-        const playAudio = async () => {
-            const { sound } = await Audio.Sound.createAsync(
-                require('./assets/sounds/explosion.mp3')
-            );
-
-            await sound.playAsync();
-        }
-
-        playAudio();
-        gameOverRef.current = true;
-    }
+    // const gameOver = () => {
+    //     const playAudio = async () => {
+    //         const { sound } = await Audio.Sound.createAsync(
+    //             require('./assets/sounds/explosion.mp3')
+    //         );
+    //
+    //         await sound.playAsync();
+    //     }
+    //
+    //     playAudio();
+    //     gameOverRef.current = true;
+    // }
 
   return (
       <GestureHandlerRootView style={{ flex: 1 }}>
