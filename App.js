@@ -6,6 +6,11 @@ import { Audio } from 'expo-av';
 export default function App() {
     // PAY ATTENTION TO SOUND CLEANUP FOR RESOURCE MANAGEMENT
 
+    // NEW MUSICS ON THIRD MECHANIC
+    // ADD EPIC SOUND FOR FIRST MECHANIC
+    // ADD START PRESENTATION
+    // ADD TROYANO SCENE
+
     const fingerMovementBlockerRef = useRef({
         swipeUp: true,
         swipeDown: true,
@@ -18,6 +23,8 @@ export default function App() {
     const firstFriendCallRef = useRef(null);
     const lailaSaysFirstObjetiveRef = useRef(null);
     const callEntranceEffectRef = useRef(null);
+
+    const motorcyclesApproachingAlertRef = useRef(null);
 
     const presentation2Ref = useRef(null);
     const presentation3Ref = useRef(null);
@@ -98,6 +105,13 @@ export default function App() {
                 require('./assets/sounds/LailaSaysFirstObjetive.mp3')
             );
             lailaSaysFirstObjetiveRef.current = sound;
+        }
+
+        async function preloadMotorcyclesApproachingSound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/motorcyclesApproachingAlert.mp3')
+            );
+            motorcyclesApproachingAlertRef.current = sound;
         }
 
         async function preloadPresentation2Sound() {
@@ -257,6 +271,7 @@ export default function App() {
         preloadCallEntranceEffectSound();
         preloadFirstFriendCallSound();
         preloadLailaSaysFirstObjetiveSound();
+        preloadMotorcyclesApproachingSound();
         preloadPresentation2Sound();
         preloadPresentation3Sound();
         preloadSteeringSound();
@@ -296,6 +311,10 @@ export default function App() {
 
             if (lailaSaysFirstObjetiveRef.current) {
                 lailaSaysFirstObjetiveRef.current.unloadAsync();
+            }
+
+            if (motorcyclesApproachingAlertRef.current) {
+                motorcyclesApproachingAlertRef.current.unloadAsync();
             }
 
             if (presentation2Ref.current) {
@@ -527,6 +546,23 @@ export default function App() {
         }, 28000);
     }
 
+    const startSecuenceAfterFirstMechanic = async () => {
+        // LAILA DICE QUE PASO EL PELIGRO Y QUE ESTAMOS LLEGANDO A TROYANO
+        // ESCENA TROYANO
+        // EFECTO DE LLAMADA
+        // SEGUNDA LLAMADA DE AMIGO
+        // LAILA DICE QUE YA TENEMOS EL PAQUETE, PODEMOS VOLVER A FUMAR Y A ESCUCHAR MUSICA
+        // TERCERA MECANICA
+        // TERMINA TERCERA MECANICA
+        // SEÑAL DE ALERTA
+        // LAILA ADVIERTE QUE NOS PERSIGUEN CON MOTOCICLETAS, HAY PELIGRO
+        // EMPIEZA SEGUNDA MECANICA
+        // TERMINA SEGUNDA MECANICA
+        // LAILA AVISA QUE ESTAMOS A SALVO
+        // EFECTO LLAMADA
+        // TERCERA LLAMADA DE AMIGO
+    }
+
     const firstMechanic = () => {
         return new Promise((resolve) => {
             fingerMovementBlockerRef.current.swipeLeft = false;
@@ -539,7 +575,7 @@ export default function App() {
                 if (i >= 3 || gameOverRef.current === true) {
                     clearInterval(warningInterval);
                     resolve(); // Resolve the promise when the interval completes
-                    // ARRIVED TO TROYANO
+                    startSecuenceAfterFirstMechanic();
                     return;
                 }
                 thereIsDanger(whereIsDanger[Math.floor(Math.random() * whereIsDanger.length)], 'obstacle');
@@ -878,12 +914,3 @@ export default function App() {
       </GestureHandlerRootView>
   );
 }
-
-
-
-
-
-
-
-
-
