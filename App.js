@@ -26,6 +26,14 @@ export default function App() {
 
     const motorcyclesApproachingAlertRef = useRef(null);
 
+    const lailaSaysNoMoreTrafficRef = useRef(null);
+    const secondFriendCallRef = useRef(null);
+    const lailaSaysPackageIsSecureRef = useRef(null);
+    const dangerAlertRef = useRef(null);
+    const lailaDetectsMotorcyclesRef = useRef(null);
+    const lailaSaysWeAreSafeFromMotorcyclesRef = useRef(null);
+    const thirdFriendCallRef = useRef(null);
+
     const presentation2Ref = useRef(null);
     const presentation3Ref = useRef(null);
 
@@ -112,6 +120,55 @@ export default function App() {
                 require('./assets/sounds/motorcyclesApproachingAlert.mp3')
             );
             motorcyclesApproachingAlertRef.current = sound;
+        }
+
+        async function preloadLailaSaysNoMoreTrafficSound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/LailaSaysNoMoreTraffic.mp3')
+            );
+            lailaSaysNoMoreTrafficRef.current = sound;
+        }
+
+        async function preloadSecondFriendCallSound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/secondFriendCall.mp3')
+            );
+            secondFriendCallRef.current = sound;
+        }
+
+        async function preloadLailaSaysPackageIsSecureSound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/LailaSaysPackageIsSecure.mp3')
+            );
+            lailaSaysPackageIsSecureRef.current = sound;
+        }
+
+        async function preloadDangerAlert() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/dangerAlert.mp3')
+            );
+            dangerAlertRef.current = sound;
+        }
+
+        async function preloadLailaDetectsMotorcyclesSound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/lailaDetectsMotorcycles.mp3')
+            );
+            lailaDetectsMotorcyclesRef.current = sound;
+        }
+
+        async function preloadLailaSaysWeAreSafeFromMotorcyclesSound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/lailaSaysWeAreSafeFromMotorcycles.mp3')
+            );
+            lailaSaysWeAreSafeFromMotorcyclesRef.current = sound;
+        }
+
+        async function preloadThirdFriendCallSound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/thirdFriendCall.mp3')
+            );
+            thirdFriendCallRef.current = sound;
         }
 
         async function preloadPresentation2Sound() {
@@ -272,6 +329,13 @@ export default function App() {
         preloadFirstFriendCallSound();
         preloadLailaSaysFirstObjetiveSound();
         preloadMotorcyclesApproachingSound();
+        preloadLailaSaysNoMoreTrafficSound();
+        preloadSecondFriendCallSound();
+        preloadLailaSaysPackageIsSecureSound();
+        preloadDangerAlert();
+        preloadLailaDetectsMotorcyclesSound();
+        preloadLailaSaysWeAreSafeFromMotorcyclesSound();
+        preloadThirdFriendCallSound();
         preloadPresentation2Sound();
         preloadPresentation3Sound();
         preloadSteeringSound();
@@ -315,6 +379,34 @@ export default function App() {
 
             if (motorcyclesApproachingAlertRef.current) {
                 motorcyclesApproachingAlertRef.current.unloadAsync();
+            }
+
+            if (lailaSaysNoMoreTrafficRef.current) {
+                lailaSaysNoMoreTrafficRef.current.unloadAsync();
+            }
+
+            if (secondFriendCallRef.current) {
+                secondFriendCallRef.current.unloadAsync();
+            }
+
+            if (lailaSaysPackageIsSecureRef.current) {
+                lailaSaysPackageIsSecureRef.current.unloadAsync();
+            }
+
+            if (dangerAlertRef.current) {
+                dangerAlertRef.current.unloadAsync();
+            }
+
+            if (lailaDetectsMotorcyclesRef.current) {
+                lailaDetectsMotorcyclesRef.current.unloadAsync();
+            }
+
+            if (lailaSaysWeAreSafeFromMotorcyclesRef.current) {
+                lailaSaysWeAreSafeFromMotorcyclesRef.current.unloadAsync();
+            }
+
+            if (thirdFriendCallRef.current) {
+                thirdFriendCallRef.current.unloadAsync();
             }
 
             if (presentation2Ref.current) {
@@ -537,30 +629,61 @@ export default function App() {
         }, 1000);
     }
 
-    const presentationNotification2 = async () => {
-        await presentation2Ref.current.setPositionAsync(0);
-        await presentation2Ref.current.playAsync();
+    const startSecuenceAfterFirstMechanic = async () => {
+        await lailaSaysNoMoreTrafficRef.current.setPositionAsync(0);
+        await lailaSaysNoMoreTrafficRef.current.playAsync();
 
-        setTimeout(() => {
-            secondPart();
-        }, 28000);
+        // ESCENA TROYANO
+
+        setTimeout(async () => {
+            await callEntranceEffectRef.current.setPositionAsync(0);
+            await callEntranceEffectRef.current.playAsync();
+        }, 12000);
+
+        setTimeout(async () => {
+            await secondFriendCallRef.current.setPositionAsync(0);
+            await secondFriendCallRef.current.playAsync();
+        }, 12000 + 8000);
+
+        setTimeout(async () => {
+            await lailaSaysPackageIsSecureRef.current.setPositionAsync(0);
+            await lailaSaysPackageIsSecureRef.current.playAsync();
+        }, 12000 + 8000 + 29000);
+
+        setTimeout(async () => {
+            await thirdMechanic();
+        }, 12000 + 8000 + 29000 + 29000 + 12000);
+
+        setTimeout(async () => {
+            await endThirdMechanic();
+            await dangerAlertRef.current.setPositionAsync(0);
+            await dangerAlertRef.current.playAsync();
+        }, 12000 + 8000 + 29000 + 29000 + 12000 + 45000);
+
+        setTimeout(async () => {
+            await lailaDetectsMotorcyclesRef.current.setPositionAsync(0);
+            await lailaDetectsMotorcyclesRef.current.playAsync();
+        }, 12000 + 8000 + 29000 + 29000 + 12000 + 45000 + 4000);
+
+        setTimeout(async () => {
+            await secondMechanic();
+        }, 12000 + 8000 + 29000 + 29000 + 12000 + 45000 + 4000 + 23000);
     }
 
-    const startSecuenceAfterFirstMechanic = async () => {
-        // LAILA DICE QUE PASO EL PELIGRO Y QUE ESTAMOS LLEGANDO A TROYANO
-        // ESCENA TROYANO
-        // EFECTO DE LLAMADA
-        // SEGUNDA LLAMADA DE AMIGO
-        // LAILA DICE QUE YA TENEMOS EL PAQUETE, PODEMOS VOLVER A FUMAR Y A ESCUCHAR MUSICA
-        // TERCERA MECANICA
-        // TERMINA TERCERA MECANICA
-        // SEÑAL DE ALERTA
-        // LAILA ADVIERTE QUE NOS PERSIGUEN CON MOTOCICLETAS, HAY PELIGRO
-        // EMPIEZA SEGUNDA MECANICA
-        // TERMINA SEGUNDA MECANICA
-        // LAILA AVISA QUE ESTAMOS A SALVO
-        // EFECTO LLAMADA
-        // TERCERA LLAMADA DE AMIGO
+    const startSecuenceAfterSecondMechanic = async () => {
+        await lailaSaysWeAreSafeFromMotorcyclesRef.current.setPositionAsync(0);
+        await lailaSaysWeAreSafeFromMotorcyclesRef.current.playAsync();
+
+        setTimeout(async () => {
+            callEntranceEffectRef.current.setPositionAsync(0);
+            callEntranceEffectRef.current.playAsync();
+        }, 17000);
+
+        setTimeout(async () => {
+            await thirdFriendCallRef.current.setPositionAsync(0);
+            await thirdFriendCallRef.current.playAsync();
+        }, 17000 + 8000);
+
     }
 
     const firstMechanic = () => {
@@ -583,7 +706,7 @@ export default function App() {
             }, 6000);
         });
     }
-    const secondPart = () => {
+    const secondMechanic = () => {
         return new Promise((resolve) => {
             fingerMovementBlockerRef.current.tap = false;
 
@@ -593,7 +716,8 @@ export default function App() {
             const warningInterval = setInterval(() => {
                 if (i >= 3 || gameOverRef.current === true) {
                     clearInterval(warningInterval);
-                    resolve(); // Resolve the promise when the interval completes or game over
+                    resolve();
+                    startSecuenceAfterSecondMechanic();
                     return;
                 }
                 thereIsDanger(whereIsDanger[Math.floor(Math.random() * whereIsDanger.length)], 'shoot');
