@@ -11,6 +11,9 @@ export default function App() {
     // ADD START PRESENTATION
     // ADD TROYANO SCENE
 
+    // SEGUNDA VEZ DE LA MECANICA DE CIGARROS NO FUNCIONA EN EL MOMENTO CORRECTO
+    // LA MECANICA 2 NO PARA CUANDO EMPIEZA LA ALERTA DE PELIGRO
+
     const fingerMovementBlockerRef = useRef({
         swipeUp: true,
         swipeDown: true,
@@ -548,19 +551,22 @@ export default function App() {
             setTimeout(() => {
                 lailaPresentationRef.current.setPositionAsync(0);
                 lailaPresentationRef.current.playAsync();
+            }, 8000 + 12000 + 52000);
+
+            setTimeout(() => {
                 thirdMechanic();
-            }, 70000);
+            }, 8000 + 12000 + 52000 + 37000);
 
             setTimeout(async () => {
                 await endThirdMechanic();
                 lailaSaysFirstObjetiveRef.current.setPositionAsync(0);
                 lailaSaysFirstObjetiveRef.current.playAsync();
-            }, 8000 + 12000 + 70000 + 60000);
+            }, 8000 + 12000 + 52000 + 37000 + 60000);
 
             setTimeout(async () => {
                 // add music
                 await firstMechanic();
-            }, 8000 + 12000 + 70000 + 60000 + 22000);
+            }, 8000 + 12000 + 52000 + 37000 + 60000 + 5000);
 
         }, []);
 
@@ -650,24 +656,24 @@ export default function App() {
             await lailaSaysPackageIsSecureRef.current.playAsync();
         }, 12000 + 8000 + 29000);
 
-        setTimeout(async () => {
-            await thirdMechanic();
-        }, 12000 + 8000 + 29000 + 29000 + 12000);
+        setTimeout(() => {
+            thirdMechanic();
+        }, 12000 + 8000 + 29000 + 29000);
 
         setTimeout(async () => {
             await endThirdMechanic();
             await dangerAlertRef.current.setPositionAsync(0);
             await dangerAlertRef.current.playAsync();
-        }, 12000 + 8000 + 29000 + 29000 + 12000 + 45000);
+        }, 12000 + 8000 + 29000 + 29000 + 45000);
 
         setTimeout(async () => {
             await lailaDetectsMotorcyclesRef.current.setPositionAsync(0);
             await lailaDetectsMotorcyclesRef.current.playAsync();
-        }, 12000 + 8000 + 29000 + 29000 + 12000 + 45000 + 4000);
+        }, 12000 + 8000 + 29000 + 29000 + 45000 + 4000);
 
         setTimeout(async () => {
             await secondMechanic();
-        }, 12000 + 8000 + 29000 + 29000 + 12000 + 45000 + 4000 + 23000);
+        }, 12000 + 8000 + 29000 + 29000 + 45000 + 4000 + 23000);
     }
 
     const startSecuenceAfterSecondMechanic = async () => {
