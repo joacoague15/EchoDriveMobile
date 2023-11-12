@@ -558,15 +558,15 @@ export default function App() {
             }, 8000 + 12000 + 52000 + 37000);
 
             setTimeout(async () => {
-                await endThirdMechanic();
+                endThirdMechanic();
                 lailaSaysFirstObjetiveRef.current.setPositionAsync(0);
                 lailaSaysFirstObjetiveRef.current.playAsync();
             }, 8000 + 12000 + 52000 + 37000 + 60000);
 
-            setTimeout(async () => {
+            setTimeout( () => {
                 // add music
-                await firstMechanic();
-            }, 8000 + 12000 + 52000 + 37000 + 60000 + 5000);
+                firstMechanic();
+            }, 8000 + 12000 + 52000 + 37000 + 60000 + 21000);
 
         }, []);
 
@@ -661,7 +661,7 @@ export default function App() {
         }, 12000 + 8000 + 29000 + 29000);
 
         setTimeout(async () => {
-            await endThirdMechanic();
+            endThirdMechanic();
             await dangerAlertRef.current.setPositionAsync(0);
             await dangerAlertRef.current.playAsync();
         }, 12000 + 8000 + 29000 + 29000 + 45000);
@@ -736,7 +736,7 @@ export default function App() {
         fingerMovementBlockerRef.current.swipeUp = false;
     }
 
-    const endThirdMechanic = async () => {
+    const endThirdMechanic = () => {
         fingerMovementBlockerRef.current.swipeDown = true;
         fingerMovementBlockerRef.current.swipeUp = true;
 
