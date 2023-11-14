@@ -1,14 +1,11 @@
-import { Dimensions, View } from 'react-native';
+import {Dimensions, Image, View} from 'react-native';
 import React, { useEffect, useRef } from "react";
 import { GestureHandlerRootView, PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import { Audio } from 'expo-av';
+import car from './assets/car.jpeg';
 
 export default function App() {
-    // NEW MUSICS (AI) ON THIRD MECHANIC
-    // ADD EPIC SOUND FOR FIRST MECHANIC
-    // ADD EPIC SOUND FOR SECOND MECHANIC
-    // ADD START PRESENTATION
-    // ADD TROYANO SCENE
+     // ADD TROYANO SCENE
     // Agregar imagen
 
     const fingerMovementBlockerRef = useRef({
@@ -1061,29 +1058,16 @@ export default function App() {
         } else if (carHealthRef.current <= 0) {
             noShieldsWarningRef.current.setPositionAsync(0);
             noShieldsWarningRef.current.playAsync();
-            // gameOver();
         }
     }
-
-    // const gameOver = () => {
-    //     const playAudio = async () => {
-    //         const { sound } = await Audio.Sound.createAsync(
-    //             require('./assets/sounds/explosion.mp3')
-    //         );
-    //
-    //         await sound.playAsync();
-    //     }
-    //
-    //     playAudio();
-    //     gameOverRef.current = true;
-    // }
 
   return (
       <GestureHandlerRootView style={{ flex: 1 }}>
           <View style={{ flex: 1 }}>
               <TapGestureHandler onHandlerStateChange={handleTapGesture}>
                   <PanGestureHandler onHandlerStateChange={onHandlerStateChange}>
-                      <View style={{ flex: 1, backgroundColor: 'black' }}>
+                      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'black' }}>
+                          <Image style={{ resizeMode: 'contain', width: '100%', height: '100%'  }} source={car} alt='car-img' />
                       </View>
                   </PanGestureHandler>
               </TapGestureHandler>
