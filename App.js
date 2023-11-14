@@ -757,16 +757,17 @@ export default function App() {
         return new Promise((resolve) => {
             fingerMovementBlockerRef.current.tap = false;
 
-            carObstaclesSceneSoundRef.current.setPositionAsync(0);
-            carObstaclesSceneSoundRef.current.setVolumeAsync(0.2);
-            carObstaclesSceneSoundRef.current.setIsLoopingAsync(true);
-            carObstaclesSceneSoundRef.current.playAsync();
+            shootingSceneSoundRef.current.setPositionAsync(0);
+            shootingSceneSoundRef.current.setVolumeAsync(0.05);
+            shootingSceneSoundRef.current.setIsLoopingAsync(true);
+            shootingSceneSoundRef.current.playAsync();
 
             const whereIsDanger = ['left', 'right'];
 
             let i = 0;
             const warningInterval = setInterval(() => {
-                if (i >= 3 || gameOverRef.current === true) {
+                if (i >= 12 || gameOverRef.current === true) {
+                    shootingSceneSoundRef.current.pauseAsync();
                     clearInterval(warningInterval);
                     resolve();
                     startSecuenceAfterSecondMechanic();
