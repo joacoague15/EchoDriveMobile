@@ -1,18 +1,15 @@
-import { Alert, Dimensions, View } from 'react-native';
+import { Dimensions, View } from 'react-native';
 import React, { useEffect, useRef } from "react";
 import { GestureHandlerRootView, PanGestureHandler, State, TapGestureHandler } from 'react-native-gesture-handler';
 import { Audio } from 'expo-av';
 
 export default function App() {
-    // PAY ATTENTION TO SOUND CLEANUP FOR RESOURCE MANAGEMENT
-
-    // NEW MUSICS ON THIRD MECHANIC
+    // NEW MUSICS (AI) ON THIRD MECHANIC
     // ADD EPIC SOUND FOR FIRST MECHANIC
+    // ADD EPIC SOUND FOR SECOND MECHANIC
     // ADD START PRESENTATION
     // ADD TROYANO SCENE
-
-    // SEGUNDA VEZ DE LA MECANICA DE CIGARROS NO FUNCIONA EN EL MOMENTO CORRECTO
-    // LA MECANICA 2 NO PARA CUANDO EMPIEZA LA ALERTA DE PELIGRO
+    // Agregar imagen
 
     const fingerMovementBlockerRef = useRef({
         swipeUp: true,
@@ -21,6 +18,9 @@ export default function App() {
         swipeRight: true,
         tap: true
     });
+
+    const carObstaclesSceneSoundRef = useRef(null);
+    const shootingSceneSoundRef = useRef(null);
 
     const lailaPresentationRef = useRef(null);
     const firstFriendCallRef = useRef(null);
@@ -90,6 +90,20 @@ export default function App() {
 
     // Preload sounds
     useEffect(() => {
+        async function preloadCarObstaclesSceneMusic() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/carObstaclesSceneMusic.mp3')
+            );
+            carObstaclesSceneSoundRef.current = sound;
+        }
+
+        async function preloadShootingSceneMusic() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/shootingSceneMusic.mp3')
+            );
+            shootingSceneSoundRef.current = sound;
+        }
+
         async function preloadLailaPresentationSound() {
             const { sound } = await Audio.Sound.createAsync(
                 require('./assets/sounds/LailaPresentation.mp3')
@@ -327,6 +341,8 @@ export default function App() {
             noShieldsWarningRef.current = sound;
         }
 
+        preloadCarObstaclesSceneMusic();
+        preloadShootingSceneMusic();
         preloadLailaPresentationSound();
         preloadCallEntranceEffectSound();
         preloadFirstFriendCallSound();
@@ -364,6 +380,14 @@ export default function App() {
 
         return () => {
             // Unload the sound from memory when component unmounts
+            if (carObstaclesSceneSoundRef.current) {
+                carObstaclesSceneSoundRef.current.unloadAsync();
+            }
+
+            if (shootingSceneSoundRef.current) {
+                shootingSceneSoundRef.current.unloadAsync();
+            }
+
             if (lailaPresentationRef.current) {
                 lailaPresentationRef.current.unloadAsync();
             }
@@ -537,36 +561,35 @@ export default function App() {
     }
 
         useEffect(() => {
-            // THIS TIMEOUT IS ONLY FOR LOADING, THERE IS A BETTER WAY TO DO THIS
             setTimeout(() => {
                 callEntranceEffectRef.current.setPositionAsync(0);
                 callEntranceEffectRef.current.playAsync();
-            }, 8000);
+            }, 80000);
 
             setTimeout(() => {
                 firstFriendCallRef.current.setPositionAsync(0);
                 firstFriendCallRef.current.playAsync();
-            }, 12000);
+            }, 80000 + 8000);
 
             setTimeout(() => {
                 lailaPresentationRef.current.setPositionAsync(0);
                 lailaPresentationRef.current.playAsync();
-            }, 8000 + 12000 + 52000);
+            }, 80000 + 8000 + 50000);
 
             setTimeout(() => {
                 thirdMechanic();
-            }, 8000 + 12000 + 52000 + 37000);
+            }, 80000 + 8000 + 50000 + 37000);
 
             setTimeout(async () => {
                 endThirdMechanic();
                 lailaSaysFirstObjetiveRef.current.setPositionAsync(0);
                 lailaSaysFirstObjetiveRef.current.playAsync();
-            }, 8000 + 12000 + 52000 + 37000 + 60000);
+            }, 80000 + 8000 + 50000 + 37000 + 25000);
 
             setTimeout( () => {
                 // add music
                 firstMechanic();
-            }, 8000 + 12000 + 52000 + 37000 + 60000 + 21000);
+            }, 80000 + 8000 + 50000 + 37000 + 25000 + 21000);
 
         }, []);
 
@@ -582,6 +605,19 @@ export default function App() {
         }
 
         carMoving();
+    }, []);
+
+    useEffect(() => {
+        const gamePresentation = async () => {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/gamePresentation.mp3')
+            );
+
+            await sound.setVolumeAsync(1);
+            await sound.playAsync();
+        }
+
+        gamePresentation();
     }, []);
 
     const handleTapGesture = async event => {
@@ -658,22 +694,22 @@ export default function App() {
 
         setTimeout(() => {
             thirdMechanic();
-        }, 12000 + 8000 + 29000 + 29000);
+        }, 12000 + 8000 + 29000 + 12000);
 
         setTimeout(async () => {
             endThirdMechanic();
             await dangerAlertRef.current.setPositionAsync(0);
             await dangerAlertRef.current.playAsync();
-        }, 12000 + 8000 + 29000 + 29000 + 45000);
+        }, 12000 + 8000 + 29000 + 12000 + 25000);
 
         setTimeout(async () => {
             await lailaDetectsMotorcyclesRef.current.setPositionAsync(0);
             await lailaDetectsMotorcyclesRef.current.playAsync();
-        }, 12000 + 8000 + 29000 + 29000 + 45000 + 4000);
+        }, 12000 + 8000 + 29000 + 12000 + 45000 + 4000);
 
         setTimeout(async () => {
             await secondMechanic();
-        }, 12000 + 8000 + 29000 + 29000 + 45000 + 4000 + 23000);
+        }, 12000 + 8000 + 29000 + 12000 + 45000 + 4000 + 23000);
     }
 
     const startSecuenceAfterSecondMechanic = async () => {
