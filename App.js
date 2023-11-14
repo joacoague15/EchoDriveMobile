@@ -574,22 +574,21 @@ export default function App() {
             setTimeout(() => {
                 lailaPresentationRef.current.setPositionAsync(0);
                 lailaPresentationRef.current.playAsync();
-            }, 80000 + 8000 + 50000);
+            }, 80000 + 8000 + 51000);
 
             setTimeout(() => {
                 thirdMechanic();
-            }, 80000 + 8000 + 50000 + 37000);
+            }, 80000 + 8000 + 51000 + 37000);
 
             setTimeout(async () => {
                 endThirdMechanic();
                 lailaSaysFirstObjetiveRef.current.setPositionAsync(0);
                 lailaSaysFirstObjetiveRef.current.playAsync();
-            }, 80000 + 8000 + 50000 + 37000 + 25000);
+            }, 80000 + 8000 + 51000 + 37000 + 25000);
 
             setTimeout( () => {
-                // add music
                 firstMechanic();
-            }, 80000 + 8000 + 50000 + 37000 + 25000 + 21000);
+            }, 80000 + 8000 + 51000 + 37000 + 25000 + 21000);
 
         }, []);
 
@@ -733,11 +732,17 @@ export default function App() {
             fingerMovementBlockerRef.current.swipeLeft = false;
             fingerMovementBlockerRef.current.swipeRight = false;
 
+            carObstaclesSceneSoundRef.current.setPositionAsync(0);
+            carObstaclesSceneSoundRef.current.setVolumeAsync(0.05);
+            carObstaclesSceneSoundRef.current.setIsLoopingAsync(true);
+            carObstaclesSceneSoundRef.current.playAsync();
+
             const whereIsDanger = ['left', 'right'];
 
             let i = 0;
             const warningInterval = setInterval(() => {
-                if (i >= 3 || gameOverRef.current === true) {
+                if (i >= 10 || gameOverRef.current === true) {
+                    carObstaclesSceneSoundRef.current.pauseAsync();
                     clearInterval(warningInterval);
                     resolve(); // Resolve the promise when the interval completes
                     startSecuenceAfterFirstMechanic();
@@ -751,6 +756,11 @@ export default function App() {
     const secondMechanic = () => {
         return new Promise((resolve) => {
             fingerMovementBlockerRef.current.tap = false;
+
+            carObstaclesSceneSoundRef.current.setPositionAsync(0);
+            carObstaclesSceneSoundRef.current.setVolumeAsync(0.2);
+            carObstaclesSceneSoundRef.current.setIsLoopingAsync(true);
+            carObstaclesSceneSoundRef.current.playAsync();
 
             const whereIsDanger = ['left', 'right'];
 
