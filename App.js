@@ -583,21 +583,21 @@ export default function App() {
             setTimeout(() => {
                 lailaPresentationRef.current.setPositionAsync(0);
                 lailaPresentationRef.current.playAsync();
-            }, 80000 + 8000 + 51000);
+            }, 80000 + 8000 + 52000);
 
             setTimeout(() => {
                 thirdMechanic();
-            }, 80000 + 8000 + 51000 + 37000);
+            }, 80000 + 8000 + 52000 + 37000);
 
             setTimeout(async () => {
                 endThirdMechanic();
                 lailaSaysFirstObjetiveRef.current.setPositionAsync(0);
                 lailaSaysFirstObjetiveRef.current.playAsync();
-            }, 80000 + 8000 + 51000 + 37000 + 25000);
+            }, 80000 + 8000 + 52000 + 37000 + 25000);
 
             setTimeout( () => {
                 firstMechanic();
-            }, 80000 + 8000 + 51000 + 37000 + 25000 + 21000);
+            }, 80000 + 8000 + 52000 + 37000 + 25000 + 21000);
 
         }, []);
 
@@ -727,11 +727,11 @@ export default function App() {
         setTimeout(async () => {
             await lailaDetectsMotorcyclesRef.current.setPositionAsync(0);
             await lailaDetectsMotorcyclesRef.current.playAsync();
-        }, 12000 + 95000 + 8000 + 29000 + 12000 + 45000 + 4000);
+        }, 12000 + 95000 + 8000 + 29000 + 12000 + 25000 + 4000);
 
         setTimeout(async () => {
             await secondMechanic();
-        }, 12000 + 95000 + 8000 + 29000 + 12000 + 45000 + 4000 + 23000);
+        }, 12000 + 95000 + 8000 + 29000 + 12000 + 25000 + 4000 + 23000);
     }
 
     const startSecuenceAfterSecondMechanic = async () => {
@@ -756,7 +756,7 @@ export default function App() {
             fingerMovementBlockerRef.current.swipeRight = false;
 
             carObstaclesSceneSoundRef.current.setPositionAsync(0);
-            carObstaclesSceneSoundRef.current.setVolumeAsync(0.05);
+            carObstaclesSceneSoundRef.current.setVolumeAsync(0.1);
             carObstaclesSceneSoundRef.current.setIsLoopingAsync(true);
             carObstaclesSceneSoundRef.current.playAsync();
 
@@ -781,7 +781,7 @@ export default function App() {
             fingerMovementBlockerRef.current.tap = false;
 
             shootingSceneSoundRef.current.setPositionAsync(0);
-            shootingSceneSoundRef.current.setVolumeAsync(0.05);
+            shootingSceneSoundRef.current.setVolumeAsync(0.1);
             shootingSceneSoundRef.current.setIsLoopingAsync(true);
             shootingSceneSoundRef.current.playAsync();
 
