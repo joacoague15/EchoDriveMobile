@@ -5,8 +5,6 @@ import { Audio } from 'expo-av';
 import car from './assets/car.jpeg';
 
 export default function App() {
-     // ADD TROYANO SCENE
-    // Agregar imagen
 
     const fingerMovementBlockerRef = useRef({
         swipeUp: true,
@@ -23,6 +21,8 @@ export default function App() {
     const firstFriendCallRef = useRef(null);
     const lailaSaysFirstObjetiveRef = useRef(null);
     const callEntranceEffectRef = useRef(null);
+
+    const troyanoSceneRef = useRef(null);
 
     const motorcyclesApproachingAlertRef = useRef(null);
 
@@ -127,6 +127,13 @@ export default function App() {
                 require('./assets/sounds/LailaSaysFirstObjetive.mp3')
             );
             lailaSaysFirstObjetiveRef.current = sound;
+        }
+
+        async function preloadTroyanoSceneSound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('./assets/sounds/troyanoScene.mp3')
+            );
+            troyanoSceneRef.current = sound;
         }
 
         async function preloadMotorcyclesApproachingSound() {
@@ -344,6 +351,7 @@ export default function App() {
         preloadCallEntranceEffectSound();
         preloadFirstFriendCallSound();
         preloadLailaSaysFirstObjetiveSound();
+        preloadTroyanoSceneSound();
         preloadMotorcyclesApproachingSound();
         preloadLailaSaysNoMoreTrafficSound();
         preloadSecondFriendCallSound();
@@ -399,6 +407,10 @@ export default function App() {
 
             if (lailaSaysFirstObjetiveRef.current) {
                 lailaSaysFirstObjetiveRef.current.unloadAsync();
+            }
+
+            if (troyanoSceneRef.current) {
+                troyanoSceneRef.current.unloadAsync();
             }
 
             if (motorcyclesApproachingAlertRef.current) {
@@ -589,6 +601,8 @@ export default function App() {
 
         }, []);
 
+    const carMovingRef = useRef(null);
+
     useEffect(() => {
         const carMoving = async () => {
             const { sound } = await Audio.Sound.createAsync(
@@ -598,6 +612,8 @@ export default function App() {
             await sound.setVolumeAsync(1);
             await sound.setIsLoopingAsync(true);
             await sound.playAsync();
+
+            carMovingRef.current = sound;
         }
 
         carMoving();
@@ -671,41 +687,51 @@ export default function App() {
         await lailaSaysNoMoreTrafficRef.current.setPositionAsync(0);
         await lailaSaysNoMoreTrafficRef.current.playAsync();
 
-        // ESCENA TROYANO
+        carMovingRef.current.pauseAsync();
+
+        setTimeout(async () => {
+            troyanoSceneRef.current.setPositionAsync(0);
+            troyanoSceneRef.current.playAsync();
+        }, 12000);
 
         setTimeout(async () => {
             await callEntranceEffectRef.current.setPositionAsync(0);
             await callEntranceEffectRef.current.playAsync();
-        }, 12000);
+        }, 12000 + 95000);
+
+        carMovingRef.current.setPositionAsync(0);
+        carMovingRef.current.setIsLoopingAsync(true);
+        carMovingRef.current.playAsync();
+        carMovingRef.current.setVolumeAsync(1);
 
         setTimeout(async () => {
             await secondFriendCallRef.current.setPositionAsync(0);
             await secondFriendCallRef.current.playAsync();
-        }, 12000 + 8000);
+        }, 12000 + 95000 + 8000);
 
         setTimeout(async () => {
             await lailaSaysPackageIsSecureRef.current.setPositionAsync(0);
             await lailaSaysPackageIsSecureRef.current.playAsync();
-        }, 12000 + 8000 + 29000);
+        }, 12000 + 95000 + 8000 + 29000);
 
         setTimeout(() => {
             thirdMechanic();
-        }, 12000 + 8000 + 29000 + 12000);
+        }, 12000 + 95000 + 8000 + 29000 + 12000);
 
         setTimeout(async () => {
             endThirdMechanic();
             await dangerAlertRef.current.setPositionAsync(0);
             await dangerAlertRef.current.playAsync();
-        }, 12000 + 8000 + 29000 + 12000 + 25000);
+        }, 12000 + 95000 + 8000 + 29000 + 12000 + 25000);
 
         setTimeout(async () => {
             await lailaDetectsMotorcyclesRef.current.setPositionAsync(0);
             await lailaDetectsMotorcyclesRef.current.playAsync();
-        }, 12000 + 8000 + 29000 + 12000 + 45000 + 4000);
+        }, 12000 + 95000 + 8000 + 29000 + 12000 + 45000 + 4000);
 
         setTimeout(async () => {
             await secondMechanic();
-        }, 12000 + 8000 + 29000 + 12000 + 45000 + 4000 + 23000);
+        }, 12000 + 95000 + 8000 + 29000 + 12000 + 45000 + 4000 + 23000);
     }
 
     const startSecuenceAfterSecondMechanic = async () => {
